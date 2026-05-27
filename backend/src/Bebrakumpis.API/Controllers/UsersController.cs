@@ -37,7 +37,7 @@ public class UsersController(IMediator mediator) : ControllerBase
         if (!result.IsSuccess)
             return result.ToProblemResult(this);
 
-        return CreatedAtAction(nameof(GetAll), new { id = result.Value.Id }, result.Value);
+        return CreatedAtAction(nameof(GetAll), new { }, result.Value);
     }
 
     [HttpPut("{id:guid}")]

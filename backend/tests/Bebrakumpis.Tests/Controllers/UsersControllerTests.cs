@@ -136,6 +136,17 @@ public class UsersControllerTests : IClassFixture<TestWebAppFactory>, IAsyncLife
     }
 
     [Fact]
+    public async Task Update_ShouldReturn403_WhenCalledByNonAdmin()
+    {
+        var user = await _factory.SeedUserAsync("updateforbidden", "User", "Test@123");
+
+        var response = await _userClient!.PutAsJsonAsync($"/api/v1/users/{user.Id}",
+            new { firstName = "Hacker", lastName = "User", role = "Admin", isActive = true });
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
     public async Task Update_ShouldReturn404_WhenUserDoesNotExist()
     {
         var response = await _adminClient!.PutAsJsonAsync($"/api/v1/users/{Guid.NewGuid()}",

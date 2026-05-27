@@ -52,13 +52,15 @@ public class UpdateUserCommandTests
     public async Task HandleAsync_ShouldReturnConflict_WhenAdminTriesToDeactivateThemselves()
     {
         var id = Guid.NewGuid();
+        var user = new User { Id = id, FirstName = "Name", LastName = "Last", Username = "self", Role = "Admin", IsActive = true, CreatedAt = DateTime.UtcNow };
+        _repoMock.Setup(r => r.GetByIdAsync(id, default)).ReturnsAsync(user);
 
         var result = await _handler.HandleAsync(
             new UpdateUserCommand(id, id, "Name", "Last", "Admin", false), default);
 
         Assert.False(result.IsSuccess);
         Assert.Equal(ErrorType.Conflict, result.ErrorType);
-        _repoMock.Verify(r => r.GetByIdAsync(It.IsAny<Guid>(), default), Times.Never);
+        _repoMock.Verify(r => r.UpdateAsync(It.IsAny<User>(), default), Times.Never);
     }
 
     [Fact]

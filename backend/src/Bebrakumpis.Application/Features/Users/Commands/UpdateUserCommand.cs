@@ -20,12 +20,12 @@ public class UpdateUserCommandHandler(
         if (!validation.IsValid)
             return Result<UserResponse>.ValidationFailure(validation.Errors.Select(e => e.ErrorMessage));
 
-        if (command.RequesterId == command.Id && !command.IsActive)
-            return Result<UserResponse>.Conflict("You cannot deactivate your own account.");
-
         var user = await userRepository.GetByIdAsync(command.Id, ct);
         if (user is null)
             return Result<UserResponse>.NotFound($"User '{command.Id}' not found.");
+
+        if (command.RequesterId == command.Id && !command.IsActive)
+            return Result<UserResponse>.Conflict("You cannot deactivate your own account.");
 
         user.FirstName = command.FirstName;
         user.LastName = command.LastName;
