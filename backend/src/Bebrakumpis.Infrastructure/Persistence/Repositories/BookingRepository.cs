@@ -14,16 +14,28 @@ public class BookingRepository(IDbConnectionFactory connectionFactory) : IBookin
         var lastDay = new DateTime(year, month, DateTime.DaysInMonth(year, month)).Date;
 
         using IDbConnection connection = connectionFactory.CreateConnection();
-        var cmd = new CommandDefinition("""
-            SELECT b.id, b.house_id, b.type, b.start_date, b.end_date,
-                   b.display_text, b.notes, b.created_by, b.created_at,
-                   (u.first_name || ' ' || u.last_name) AS created_by_name
-            FROM bookings b
-            LEFT JOIN users u ON u.id = b.created_by
-            WHERE b.start_date <= @LastDay AND b.end_date >= @FirstDay
-            ORDER BY b.start_date
+        var bookingsCmd = new CommandDefinition("""
+            SELECT id, house_id, type, start_date, end_date,
+                   display_text, notes, created_by, created_at
+            FROM bookings
+            WHERE start_date <= @LastDay AND end_date >= @FirstDay
+            ORDER BY start_date
             """, new { FirstDay = firstDay, LastDay = lastDay }, cancellationToken: cancellationToken);
-        return await connection.QueryAsync<Booking>(cmd);
+        var bookings = (await connection.QueryAsync<Booking>(bookingsCmd)).ToList();
+
+        if (bookings.Count == 0) return bookings;
+
+        var creatorIds = bookings.Select(b => b.CreatedBy).Distinct().ToList();
+        var namesCmd = new CommandDefinition("""
+            SELECT id, first_name, last_name FROM users WHERE id IN @Ids
+            """, new { Ids = creatorIds }, cancellationToken: cancellationToken);
+        var users = await connection.QueryAsync<(Guid Id, string FirstName, string LastName)>(namesCmd);
+        var nameMap = users.ToDictionary(u => u.Id, u => $"{u.FirstName} {u.LastName}");
+
+        foreach (var b in bookings)
+            b.CreatedByName = nameMap.GetValueOrDefault(b.CreatedBy);
+
+        return bookings;
     }
 
     public async Task<Booking?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
