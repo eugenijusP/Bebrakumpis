@@ -1,0 +1,3 @@
+ALTER TABLE users ADD first_name NVARCHAR(100) NOT NULL DEFAULT '';
+ALTER TABLE users ADD last_name  NVARCHAR(100) NOT NULL DEFAULT '';
+ALTER TABLE users ADD is_active  BIT           NOT NULL DEFAULT 1;

@@ -3,6 +3,7 @@ import { renderLayout } from './components/layout';
 import { spinner } from './components/badge';
 import { renderLogin } from './pages/login';
 import { renderAdminHouses } from './pages/adminHouses';
+import { renderAdminUsers } from './pages/adminUsers';
 import { router } from './router';
 
 function requireAuth(): boolean {
@@ -29,6 +30,15 @@ router.on('/admin/houses', async () => {
     return;
   }
   await renderAdminHouses();
+});
+
+router.on('/admin/users', async () => {
+  if (!requireAuth()) return;
+  if (!isAdmin()) {
+    window.location.hash = '#/';
+    return;
+  }
+  await renderAdminUsers();
 });
 
 (async () => {

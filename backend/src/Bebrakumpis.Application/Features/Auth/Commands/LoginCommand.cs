@@ -25,6 +25,9 @@ public class LoginCommandHandler(
         if (user is null || !passwordHasher.Verify(command.Password, user.PasswordHash))
             return Result<string>.Unauthorized("Invalid username or password.");
 
+        if (!user.IsActive)
+            return Result<string>.Unauthorized("This account has been deactivated.");
+
         return Result<string>.Success(tokenService.GenerateToken(user));
     }
 }

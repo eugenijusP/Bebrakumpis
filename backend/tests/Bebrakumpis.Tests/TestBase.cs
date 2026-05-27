@@ -31,11 +31,14 @@ public class TestWebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
         await _keepAlive.OpenAsync();
         await _keepAlive.ExecuteAsync("""
             CREATE TABLE IF NOT EXISTS users (
-                id            TEXT NOT NULL PRIMARY KEY,
-                username      TEXT NOT NULL UNIQUE,
-                password_hash TEXT NOT NULL,
-                role          TEXT NOT NULL DEFAULT 'User',
-                created_at    TEXT NOT NULL DEFAULT (datetime('now'))
+                id            TEXT    NOT NULL PRIMARY KEY,
+                first_name    TEXT    NOT NULL DEFAULT '',
+                last_name     TEXT    NOT NULL DEFAULT '',
+                username      TEXT    NOT NULL UNIQUE,
+                password_hash TEXT    NOT NULL,
+                role          TEXT    NOT NULL DEFAULT 'User',
+                is_active     INTEGER NOT NULL DEFAULT 1,
+                created_at    TEXT    NOT NULL DEFAULT (datetime('now'))
             );
             CREATE TABLE IF NOT EXISTS houses (
                 id             TEXT NOT NULL PRIMARY KEY,
@@ -68,18 +71,22 @@ public class TestWebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
         });
     }
 
-    public async Task<User> SeedUserAsync(string username = "testuser", string role = "User", string password = "Test@123")
+    public async Task<User> SeedUserAsync(string username = "testuser", string role = "User", string password = "Test@123",
+        string firstName = "Test", string lastName = "User", bool isActive = true)
     {
         var user = new User
         {
             Id = Guid.NewGuid(),
+            FirstName = firstName,
+            LastName = lastName,
             Username = username,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(password),
             Role = role,
+            IsActive = isActive,
             CreatedAt = DateTime.UtcNow
         };
         await _keepAlive!.ExecuteAsync(
-            "INSERT OR IGNORE INTO users (id, username, password_hash, role, created_at) VALUES (@Id, @Username, @PasswordHash, @Role, @CreatedAt)",
+            "INSERT OR IGNORE INTO users (id, first_name, last_name, username, password_hash, role, is_active, created_at) VALUES (@Id, @FirstName, @LastName, @Username, @PasswordHash, @Role, @IsActive, @CreatedAt)",
             user);
         return user;
     }
