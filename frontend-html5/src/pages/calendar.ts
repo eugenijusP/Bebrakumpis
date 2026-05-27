@@ -31,7 +31,7 @@ export async function renderCalendar(): Promise<void> {
       getBookings(_year, _month),
       role !== null ? getHouses() : Promise.resolve([]),
     ]);
-    _bookings = bookings;
+    _bookings = bookings.map(b => ({ ...b, startDate: b.startDate.substring(0, 10), endDate: b.endDate.substring(0, 10) }));
     _houses = houses;
   } catch {
     document.getElementById('page-content')!.innerHTML = errorMessage('Failed to load calendar.');
@@ -349,7 +349,8 @@ async function changeMonth(delta: number): Promise<void> {
 
 async function reloadBookings(): Promise<void> {
   try {
-    _bookings = await getBookings(_year, _month);
+    const fresh = await getBookings(_year, _month);
+    _bookings = fresh.map(b => ({ ...b, startDate: b.startDate.substring(0, 10), endDate: b.endDate.substring(0, 10) }));
   } catch {
     // keep previous bookings on error
   }
