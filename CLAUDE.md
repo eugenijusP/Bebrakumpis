@@ -172,7 +172,7 @@ src/
 # Set the connection string in appsettings.Development.json or via env var.
 
 cd backend/src/Bebrakumpis.API
-dotnet run   # default: http://localhost:5000
+dotnet run   # default: http://localhost:5156
 ```
 
 ### Frontend

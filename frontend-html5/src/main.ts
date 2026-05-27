@@ -23,14 +23,5 @@ router.on('/', async () => {
 
 (async () => {
   await initAuth();
-
-  const hash = window.location.hash || '#/';
-  const isLoginPage = hash === '#/login';
-
-  if (!currentUser() && !isLoginPage) {
-    window.location.hash = '#/login';
-    return;
-  }
-
   router.start();
 })();

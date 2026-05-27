@@ -1,13 +1,16 @@
 using System.Reflection;
 using Dapper;
+using Microsoft.Data.SqlClient;
 using Bebrakumpis.Infrastructure.Persistence;
 
 namespace Bebrakumpis.API.Migrations;
 
-public class MigrationRunner(IDbConnectionFactory connectionFactory, ILogger<MigrationRunner> logger)
+public class MigrationRunner(IDbConnectionFactory connectionFactory, IConfiguration configuration, ILogger<MigrationRunner> logger)
 {
     public virtual async Task RunAsync()
     {
+        await EnsureDatabaseExistsAsync();
+
         using var connection = connectionFactory.CreateConnection();
         connection.Open();
 
@@ -47,6 +50,29 @@ public class MigrationRunner(IDbConnectionFactory connectionFactory, ILogger<Mig
             await connection.ExecuteAsync(
                 "INSERT INTO _migrations (migration_name, applied_at) VALUES (@Name, SYSUTCDATETIME())",
                 new { Name = migrationName });
+        }
+    }
+
+    private async Task EnsureDatabaseExistsAsync()
+    {
+        var connectionString = configuration.GetConnectionString("DefaultConnection")
+            ?? throw new InvalidOperationException("Connection string 'DefaultConnection' is not configured.");
+
+        var builder = new SqlConnectionStringBuilder(connectionString);
+        var databaseName = builder.InitialCatalog;
+        builder.InitialCatalog = "master";
+
+        using var masterConnection = new SqlConnection(builder.ConnectionString);
+        await masterConnection.OpenAsync();
+
+        var exists = await masterConnection.ExecuteScalarAsync<int>(
+            "SELECT COUNT(1) FROM sys.databases WHERE name = @name",
+            new { name = databaseName });
+
+        if (exists == 0)
+        {
+            logger.LogInformation("Database '{Database}' not found — creating.", databaseName);
+            await masterConnection.ExecuteAsync($"CREATE DATABASE [{databaseName}]");
         }
     }
 }
