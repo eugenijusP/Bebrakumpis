@@ -23,15 +23,7 @@ public class BookingRepository(IDbConnectionFactory connectionFactory) : IBookin
             WHERE b.start_date <= @LastDay AND b.end_date >= @FirstDay
             ORDER BY b.start_date
             """, new { FirstDay = firstDay, LastDay = lastDay }, cancellationToken: cancellationToken);
-
-        return (await connection.QueryAsync<BookingRow>(cmd))
-            .Select(r => { r.CreatedByName = r.CreatorFirstName is not null ? $"{r.CreatorFirstName} {r.CreatorLastName}" : null; return (Booking)r; });
-    }
-
-    private class BookingRow : Booking
-    {
-        public string? CreatorFirstName { get; set; }
-        public string? CreatorLastName { get; set; }
+        return await connection.QueryAsync<Booking>(cmd);
     }
 
     public async Task<Booking?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)

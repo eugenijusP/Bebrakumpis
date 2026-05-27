@@ -24,7 +24,8 @@ public class GetBookingsQueryTests
         EndDate = new DateTime(2025, 6, 10),
         DisplayText = "Family",
         Notes = "Quiet stay",
-        CreatedByName = "John Doe",
+        CreatorFirstName = "John",
+        CreatorLastName = "Doe",
         CreatedBy = Guid.NewGuid(),
         CreatedAt = DateTime.UtcNow
     };
@@ -40,7 +41,7 @@ public class GetBookingsQueryTests
         Assert.True(result.IsSuccess);
         var item = result.Value.Single();
         Assert.Equal(booking.Notes, item.Notes);
-        Assert.Equal(booking.CreatedByName, item.CreatedByName);
+        Assert.Equal($"{booking.CreatorFirstName} {booking.CreatorLastName}", item.CreatedByName);
         Assert.NotNull(item.CreatedAt);
     }
 
@@ -55,7 +56,7 @@ public class GetBookingsQueryTests
         Assert.True(result.IsSuccess);
         var item = result.Value.Single();
         Assert.Equal(booking.Notes, item.Notes);
-        Assert.Equal(booking.CreatedByName, item.CreatedByName);
+        Assert.Equal($"{booking.CreatorFirstName} {booking.CreatorLastName}", item.CreatedByName);
         Assert.Null(item.CreatedAt);
     }
 
