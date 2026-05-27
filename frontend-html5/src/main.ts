@@ -1,7 +1,8 @@
-import { initAuth, currentUser } from './auth';
+import { initAuth, currentUser, isAdmin } from './auth';
 import { renderLayout } from './components/layout';
 import { spinner } from './components/badge';
 import { renderLogin } from './pages/login';
+import { renderAdminHouses } from './pages/adminHouses';
 import { router } from './router';
 
 function requireAuth(): boolean {
@@ -19,6 +20,15 @@ router.on('/login', async () => {
 router.on('/', async () => {
   if (!requireAuth()) return;
   renderLayout('<h2>Welcome to Bebrakumpis</h2><p>Use the sidebar to navigate.</p>');
+});
+
+router.on('/admin/houses', async () => {
+  if (!requireAuth()) return;
+  if (!isAdmin()) {
+    window.location.hash = '#/';
+    return;
+  }
+  await renderAdminHouses();
 });
 
 (async () => {

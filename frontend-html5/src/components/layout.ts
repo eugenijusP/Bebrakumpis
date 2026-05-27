@@ -4,7 +4,8 @@ import { escHtml } from '../utils/escHtml';
 export function renderLayout(content: string): void {
   const user = currentUser();
   const adminLinks = isAdmin()
-    ? `<a href="#/admin/users" class="bh-nav-link">User Management</a>`
+    ? `<a href="#/admin/houses" class="bh-nav-link">Manage Houses</a>
+        <a href="#/admin/users" class="bh-nav-link">User Management</a>`
     : '';
 
   document.getElementById('app')!.innerHTML = `
