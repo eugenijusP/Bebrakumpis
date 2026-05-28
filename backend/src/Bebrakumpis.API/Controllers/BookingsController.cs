@@ -15,8 +15,12 @@ public class BookingsController(IMediator mediator) : ControllerBase
     [HttpGet]
     [AllowAnonymous]
     [ProducesResponseType(typeof(IEnumerable<BookingResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetByMonth([FromQuery] int year, [FromQuery] int month, CancellationToken ct)
     {
+        if (year < 1 || year > 9999 || month < 1 || month > 12)
+            return ValidationProblem("year must be 1–9999 and month must be 1–12.");
+
         var callerRole = User.Identity?.IsAuthenticated == true
             ? (User.IsInRole("Admin") ? "Admin" : "User")
             : null;
