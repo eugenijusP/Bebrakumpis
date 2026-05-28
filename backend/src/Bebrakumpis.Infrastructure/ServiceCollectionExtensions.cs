@@ -14,6 +14,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IDbConnectionFactory, SqlConnectionFactory>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IHouseRepository, HouseRepository>();
+        services.AddScoped<IBookingRepository, BookingRepository>();
         services.AddScoped<ITokenService, JwtTokenService>();
         services.AddScoped<IPasswordHasher, BcryptPasswordHasher>();
         return services;

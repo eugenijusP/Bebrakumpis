@@ -89,6 +89,26 @@
       /* === Cards === */
       .bh-card { background: #fff; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); padding: 1.5rem; margin-bottom: 1.25rem; }
 
+      /* === Calendar === */
+      .bh-cal-nav { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
+      .bh-cal-title { font-size: 1.25rem; font-weight: 700; flex: 1; }
+      .bh-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden; }
+      .bh-cal-dow { padding: 0.5rem; text-align: center; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: #6b7280; background: #f9fafb; border-bottom: 1px solid #e5e7eb; }
+      .bh-cal-day { min-height: 100px; padding: 0.5rem 0.4rem 0.4rem; border-right: 1px solid #f3f4f6; border-bottom: 1px solid #f3f4f6; vertical-align: top; position: relative; background: #fff; }
+      .bh-cal-day:nth-child(7n) { border-right: none; }
+      .bh-cal-day.bh-cal-other-month { background: #fafafa; }
+      .bh-cal-day-num { font-size: 0.8rem; font-weight: 600; color: #374151; margin-bottom: 0.35rem; }
+      .bh-cal-day.bh-cal-today .bh-cal-day-num { background: #6366f1; color: #fff; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+      .bh-cal-band { border-radius: 3px; padding: 1px 5px; font-size: 0.7rem; font-weight: 500; color: #fff; margin-bottom: 2px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; position: relative; }
+      .bh-cal-band-reserved { background-image: repeating-linear-gradient(135deg, rgba(255,255,255,0.15) 0px, rgba(255,255,255,0.15) 3px, transparent 3px, transparent 7px); }
+      .bh-cal-band-actions { display: none; position: absolute; right: 2px; top: 0; bottom: 0; align-items: center; gap: 2px; }
+      .bh-cal-band:hover .bh-cal-band-actions { display: flex; }
+      .bh-cal-band-btn { background: rgba(0,0,0,0.25); border: none; color: #fff; border-radius: 2px; padding: 0 4px; cursor: pointer; font-size: 0.65rem; line-height: 1.4; }
+      .bh-cal-band-btn:hover { background: rgba(0,0,0,0.5); }
+      .bh-cal-tooltip { position: fixed; background: #1f2937; color: #fff; border-radius: 8px; padding: 0.75rem 1rem; font-size: 0.8rem; max-width: 260px; z-index: 200; pointer-events: none; box-shadow: 0 4px 16px rgba(0,0,0,0.2); }
+      .bh-cal-tooltip-title { font-weight: 700; margin-bottom: 0.35rem; }
+      .bh-cal-tooltip-row { color: #d1d5db; margin-top: 0.2rem; }
+
       /* === Responsive === */
       @media (max-width: 768px) {
         .bh-sidebar { width: 200px; }

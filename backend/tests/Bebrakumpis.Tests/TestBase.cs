@@ -29,6 +29,7 @@ public class TestWebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
         SqlMapper.AddTypeHandler(new GuidTypeHandler());
         _keepAlive = new SqliteConnection($"DataSource={_dbName};Mode=Memory;Cache=Shared");
         await _keepAlive.OpenAsync();
+        _keepAlive.CreateFunction("CONCAT", (string? a, string? b, string? c) => string.Concat(a, b, c));
         await _keepAlive.ExecuteAsync("""
             CREATE TABLE IF NOT EXISTS users (
                 id            TEXT    NOT NULL PRIMARY KEY,
@@ -46,6 +47,17 @@ public class TestWebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
                 booking_color  TEXT NOT NULL DEFAULT '#3b82f6',
                 reserved_color TEXT NOT NULL DEFAULT '#ef4444',
                 created_at     TEXT NOT NULL DEFAULT (datetime('now'))
+            );
+            CREATE TABLE IF NOT EXISTS bookings (
+                id           TEXT    NOT NULL PRIMARY KEY,
+                house_id     TEXT    NOT NULL REFERENCES houses(id),
+                type         TEXT    NOT NULL,
+                start_date   TEXT    NOT NULL,
+                end_date     TEXT    NOT NULL,
+                display_text TEXT    NOT NULL,
+                notes        TEXT    NULL,
+                created_by   TEXT    NOT NULL REFERENCES users(id),
+                created_at   TEXT    NOT NULL DEFAULT (datetime('now'))
             );
             """);
     }
@@ -105,6 +117,28 @@ public class TestWebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
             "INSERT OR IGNORE INTO houses (id, name, booking_color, reserved_color, created_at) VALUES (@Id, @Name, @BookingColor, @ReservedColor, @CreatedAt)",
             house);
         return house;
+    }
+
+    public async Task<Booking> SeedBookingAsync(Guid houseId, Guid createdBy,
+        string type = "B", string displayText = "Test booking",
+        DateTime? startDate = null, DateTime? endDate = null, string? notes = null)
+    {
+        var booking = new Booking
+        {
+            Id = Guid.NewGuid(),
+            HouseId = houseId,
+            Type = type,
+            StartDate = (startDate ?? DateTime.UtcNow.Date),
+            EndDate = (endDate ?? DateTime.UtcNow.Date.AddDays(2)),
+            DisplayText = displayText,
+            Notes = notes,
+            CreatedBy = createdBy,
+            CreatedAt = DateTime.UtcNow
+        };
+        await _keepAlive!.ExecuteAsync(
+            "INSERT OR IGNORE INTO bookings (id, house_id, type, start_date, end_date, display_text, notes, created_by, created_at) VALUES (@Id, @HouseId, @Type, @StartDate, @EndDate, @DisplayText, @Notes, @CreatedBy, @CreatedAt)",
+            booking);
+        return booking;
     }
 
     public new async Task DisposeAsync()

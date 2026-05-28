@@ -4,6 +4,7 @@ import { spinner } from './components/badge';
 import { renderLogin } from './pages/login';
 import { renderAdminHouses } from './pages/adminHouses';
 import { renderAdminUsers } from './pages/adminUsers';
+import { renderCalendar } from './pages/calendar';
 import { router } from './router';
 
 function requireAuth(): boolean {
@@ -21,6 +22,10 @@ router.on('/login', async () => {
 router.on('/', async () => {
   if (!requireAuth()) return;
   renderLayout('<h2>Welcome to Bebrakumpis</h2><p>Use the sidebar to navigate.</p>');
+});
+
+router.on('/calendar', async () => {
+  await renderCalendar();
 });
 
 router.on('/admin/houses', async () => {

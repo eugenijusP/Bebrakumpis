@@ -71,7 +71,12 @@ public class HouseRepository(IDbConnectionFactory connectionFactory) : IHouseRep
         return await connection.ExecuteScalarAsync<int>(cmd) > 0;
     }
 
-#warning HasBookingsAsync always returns false — wire up real query when Calendar/bookings table is added (feature #4)
-    public Task<bool> HasBookingsAsync(Guid id, CancellationToken cancellationToken = default)
-        => Task.FromResult(false);
+    public async Task<bool> HasBookingsAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        using IDbConnection connection = connectionFactory.CreateConnection();
+        var cmd = new CommandDefinition("""
+            SELECT COUNT(1) FROM bookings WHERE house_id = @Id
+            """, new { Id = id }, cancellationToken: cancellationToken);
+        return await connection.ExecuteScalarAsync<int>(cmd) > 0;
+    }
 }

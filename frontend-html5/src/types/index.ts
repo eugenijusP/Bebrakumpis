@@ -21,3 +21,15 @@ export interface House {
   reservedColor: string;
   createdAt: string;
 }
+
+export interface Booking {
+  id: string;
+  houseId: string;
+  type: 'B' | 'R';
+  startDate: string;
+  endDate: string;
+  displayText: string;
+  notes: string | null;
+  createdByName: string | null;
+  createdAt: string | null;
+}
