@@ -24,7 +24,6 @@ public class CreateBookingCommandTests
         Id = id,
         Name = "House A",
         BookingColor = "#3b82f6",
-        ReservedColor = "#ef4444",
         CreatedAt = DateTime.UtcNow
     };
 

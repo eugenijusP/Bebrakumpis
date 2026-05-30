@@ -12,7 +12,7 @@ public class HouseRepository(IDbConnectionFactory connectionFactory) : IHouseRep
     {
         using IDbConnection connection = connectionFactory.CreateConnection();
         var cmd = new CommandDefinition("""
-            SELECT id, name, booking_color, reserved_color, created_at
+            SELECT id, name, booking_color, created_at
             FROM houses
             ORDER BY created_at
             """, cancellationToken: cancellationToken);
@@ -23,7 +23,7 @@ public class HouseRepository(IDbConnectionFactory connectionFactory) : IHouseRep
     {
         using IDbConnection connection = connectionFactory.CreateConnection();
         var cmd = new CommandDefinition("""
-            SELECT id, name, booking_color, reserved_color, created_at
+            SELECT id, name, booking_color, created_at
             FROM houses
             WHERE id = @Id
             """, new { Id = id }, cancellationToken: cancellationToken);
@@ -34,8 +34,8 @@ public class HouseRepository(IDbConnectionFactory connectionFactory) : IHouseRep
     {
         using IDbConnection connection = connectionFactory.CreateConnection();
         var cmd = new CommandDefinition("""
-            INSERT INTO houses (id, name, booking_color, reserved_color, created_at)
-            VALUES (@Id, @Name, @BookingColor, @ReservedColor, @CreatedAt)
+            INSERT INTO houses (id, name, booking_color, created_at)
+            VALUES (@Id, @Name, @BookingColor, @CreatedAt)
             """, house, cancellationToken: cancellationToken);
         await connection.ExecuteAsync(cmd);
         return house.Id;
@@ -46,7 +46,7 @@ public class HouseRepository(IDbConnectionFactory connectionFactory) : IHouseRep
         using IDbConnection connection = connectionFactory.CreateConnection();
         var cmd = new CommandDefinition("""
             UPDATE houses
-            SET name = @Name, booking_color = @BookingColor, reserved_color = @ReservedColor
+            SET name = @Name, booking_color = @BookingColor
             WHERE id = @Id
             """, house, cancellationToken: cancellationToken);
         await connection.ExecuteAsync(cmd);

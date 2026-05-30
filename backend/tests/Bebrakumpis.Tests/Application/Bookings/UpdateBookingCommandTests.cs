@@ -34,7 +34,7 @@ public class UpdateBookingCommandTests
     private static House MakeHouse(Guid id) => new()
     {
         Id = id, Name = "House A",
-        BookingColor = "#3b82f6", ReservedColor = "#ef4444", CreatedAt = DateTime.UtcNow
+        BookingColor = "#3b82f6", CreatedAt = DateTime.UtcNow
     };
 
     [Fact]

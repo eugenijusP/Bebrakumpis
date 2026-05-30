@@ -101,7 +101,7 @@ function buildDayCells(admin: boolean, authenticated: boolean): string {
 
 function bookingBand(b: Booking, dateStr: string, admin: boolean, authenticated: boolean): string {
   const house = _houses.find(h => h.id === b.houseId);
-  const color = b.type === 'B' ? (house?.bookingColor ?? '#6366f1') : (house?.reservedColor ?? '#ef4444');
+  const color = house?.bookingColor ?? '#6366f1';
   const isFirst = b.startDate === dateStr || isFirstDayOfWeek(dateStr);
   const label = isFirst ? escHtml(b.displayText) : '&nbsp;';
   const reservedClass = b.type === 'R' ? ' bh-cal-band-reserved' : '';

@@ -4,5 +4,4 @@ public class CreateHouseRequest
 {
     public string Name { get; set; } = string.Empty;
     public string BookingColor { get; set; } = string.Empty;
-    public string ReservedColor { get; set; } = string.Empty;
 }

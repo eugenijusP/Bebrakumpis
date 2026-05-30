@@ -46,7 +46,6 @@ public class TestWebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
                 id             TEXT NOT NULL PRIMARY KEY,
                 name           TEXT NOT NULL UNIQUE,
                 booking_color  TEXT NOT NULL DEFAULT '#3b82f6',
-                reserved_color TEXT NOT NULL DEFAULT '#ef4444',
                 created_at     TEXT NOT NULL DEFAULT (datetime('now'))
             );
             CREATE TABLE IF NOT EXISTS bookings (
@@ -114,18 +113,17 @@ public class TestWebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
         return user;
     }
 
-    public async Task<House> SeedHouseAsync(string name = "Test House", string bookingColor = "#3b82f6", string reservedColor = "#ef4444")
+    public async Task<House> SeedHouseAsync(string name = "Test House", string bookingColor = "#3b82f6")
     {
         var house = new House
         {
             Id = Guid.NewGuid(),
             Name = name,
             BookingColor = bookingColor,
-            ReservedColor = reservedColor,
             CreatedAt = DateTime.UtcNow
         };
         await _keepAlive!.ExecuteAsync(
-            "INSERT OR IGNORE INTO houses (id, name, booking_color, reserved_color, created_at) VALUES (@Id, @Name, @BookingColor, @ReservedColor, @CreatedAt)",
+            "INSERT OR IGNORE INTO houses (id, name, booking_color, created_at) VALUES (@Id, @Name, @BookingColor, @CreatedAt)",
             house);
         return house;
     }

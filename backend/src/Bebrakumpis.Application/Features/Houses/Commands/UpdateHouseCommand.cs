@@ -6,7 +6,7 @@ using FluentValidation;
 
 namespace Bebrakumpis.Application.Features.Houses.Commands;
 
-public record UpdateHouseCommand(Guid Id, string Name, string BookingColor, string ReservedColor)
+public record UpdateHouseCommand(Guid Id, string Name, string BookingColor)
     : IRequest<Result<HouseResponse>>;
 
 public class UpdateHouseCommandHandler(
@@ -26,7 +26,6 @@ public class UpdateHouseCommandHandler(
 
         house.Name = command.Name;
         house.BookingColor = command.BookingColor;
-        house.ReservedColor = command.ReservedColor;
 
         await houseRepository.UpdateAsync(house, ct);
 
@@ -35,7 +34,6 @@ public class UpdateHouseCommandHandler(
             Id = house.Id,
             Name = house.Name,
             BookingColor = house.BookingColor,
-            ReservedColor = house.ReservedColor,
             CreatedAt = house.CreatedAt
         });
     }

@@ -37,8 +37,7 @@ function renderPage(): void {
             <thead>
               <tr>
                 <th>Name</th>
-                <th>Booking Colour</th>
-                <th>Reserved Colour</th>
+                <th>Colour</th>
                 <th></th>
               </tr>
             </thead>
@@ -57,15 +56,9 @@ function renderPage(): void {
             <label for="house-name" class="bh-label">Name</label>
             <input id="house-name" type="text" class="bh-input" maxlength="100" required />
           </div>
-          <div class="bh-form-grid bh-form-grid-2">
-            <div class="bh-form-group">
-              <label for="house-booking-color" class="bh-label">Booking Colour</label>
-              <input id="house-booking-color" type="color" class="bh-input" value="#3b82f6" />
-            </div>
-            <div class="bh-form-group">
-              <label for="house-reserved-color" class="bh-label">Reserved Colour</label>
-              <input id="house-reserved-color" type="color" class="bh-input" value="#ef4444" />
-            </div>
+          <div class="bh-form-group">
+            <label for="house-booking-color" class="bh-label">Colour</label>
+            <input id="house-booking-color" type="color" class="bh-input" value="#3b82f6" />
           </div>
           <div id="house-form-error" class="bh-error-message" style="display:none"></div>
           <div style="display:flex;gap:0.75rem;justify-content:flex-end;margin-top:0.5rem">
@@ -85,12 +78,6 @@ function houseRow(h: House): string {
       <span style="display:inline-flex;align-items:center;gap:0.5rem">
         <span style="width:1rem;height:1rem;border-radius:3px;background:${escAttr(h.bookingColor)};border:1px solid #d1d5db;display:inline-block"></span>
         ${escHtml(h.bookingColor)}
-      </span>
-    </td>
-    <td>
-      <span style="display:inline-flex;align-items:center;gap:0.5rem">
-        <span style="width:1rem;height:1rem;border-radius:3px;background:${escAttr(h.reservedColor)};border:1px solid #d1d5db;display:inline-block"></span>
-        ${escHtml(h.reservedColor)}
       </span>
     </td>
     <td style="text-align:right;white-space:nowrap">
@@ -130,7 +117,6 @@ function openAddModal(): void {
   (document.getElementById('modal-house-title') as HTMLElement).textContent = 'Add House';
   (document.getElementById('house-name') as HTMLInputElement).value = '';
   (document.getElementById('house-booking-color') as HTMLInputElement).value = '#3b82f6';
-  (document.getElementById('house-reserved-color') as HTMLInputElement).value = '#ef4444';
   (document.getElementById('house-form-error') as HTMLElement).style.display = 'none';
   openModal('modal-house');
 }
@@ -140,7 +126,6 @@ function openEditModal(house: House): void {
   (document.getElementById('modal-house-title') as HTMLElement).textContent = 'Edit House';
   (document.getElementById('house-name') as HTMLInputElement).value = house.name;
   (document.getElementById('house-booking-color') as HTMLInputElement).value = house.bookingColor;
-  (document.getElementById('house-reserved-color') as HTMLInputElement).value = house.reservedColor;
   (document.getElementById('house-form-error') as HTMLElement).style.display = 'none';
   openModal('modal-house');
 }
@@ -154,14 +139,13 @@ async function handleFormSubmit(e: Event): Promise<void> {
 
   const name = (document.getElementById('house-name') as HTMLInputElement).value.trim();
   const bookingColor = (document.getElementById('house-booking-color') as HTMLInputElement).value;
-  const reservedColor = (document.getElementById('house-reserved-color') as HTMLInputElement).value;
 
   try {
     if (_editingId) {
-      const updated = await updateHouse(_editingId, { name, bookingColor, reservedColor });
+      const updated = await updateHouse(_editingId, { name, bookingColor });
       _houses = _houses.map(h => h.id === _editingId ? updated : h);
     } else {
-      const created = await createHouse({ name, bookingColor, reservedColor });
+      const created = await createHouse({ name, bookingColor });
       _houses = [..._houses, created];
     }
     closeModal('modal-house');
