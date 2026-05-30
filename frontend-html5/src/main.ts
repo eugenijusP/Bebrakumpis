@@ -1,5 +1,5 @@
 import { initAuth, currentUser, isAdmin } from './auth';
-import { renderLogin } from './pages/login';
+import { openLoginModal } from './components/layout';
 import { renderAdminHouses } from './pages/adminHouses';
 import { renderAdminUsers } from './pages/adminUsers';
 import { renderCalendar } from './pages/calendar';
@@ -16,7 +16,9 @@ function requireAuth(): boolean {
 }
 
 router.on('/login', async () => {
-  await renderLogin();
+  // Login is a modal, not a page: render home behind it, then pop the modal.
+  await renderMainPage();
+  openLoginModal();
 });
 
 router.on('/', async () => {
