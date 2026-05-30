@@ -10,5 +10,6 @@ public interface IHouseRepository
     Task UpdateAsync(House house, CancellationToken cancellationToken = default);
     Task DeleteAsync(Guid id, CancellationToken cancellationToken = default);
     Task<bool> ExistsAsync(string name, CancellationToken cancellationToken = default);
+    Task<bool> ExistsForOtherAsync(string name, Guid excludeId, CancellationToken cancellationToken = default);
     Task<bool> HasBookingsAsync(Guid id, CancellationToken cancellationToken = default);
 }

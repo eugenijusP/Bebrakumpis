@@ -46,6 +46,9 @@ public class TestWebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
                 id             TEXT NOT NULL PRIMARY KEY,
                 name           TEXT NOT NULL UNIQUE,
                 booking_color  TEXT NOT NULL DEFAULT '#3b82f6',
+                description    TEXT NULL,
+                photo_url      TEXT NULL,
+                amenities      TEXT NULL,
                 created_at     TEXT NOT NULL DEFAULT (datetime('now'))
             );
             CREATE TABLE IF NOT EXISTS bookings (
@@ -113,18 +116,32 @@ public class TestWebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
         return user;
     }
 
-    public async Task<House> SeedHouseAsync(string name = "Test House", string bookingColor = "#3b82f6")
+    public async Task<House> SeedHouseAsync(string name = "Test House", string bookingColor = "#3b82f6",
+        string? description = null, string? photoUrl = null, List<string>? amenities = null)
     {
         var house = new House
         {
             Id = Guid.NewGuid(),
             Name = name,
             BookingColor = bookingColor,
+            Description = description,
+            PhotoUrl = photoUrl,
+            Amenities = amenities ?? [],
             CreatedAt = DateTime.UtcNow
         };
         await _keepAlive!.ExecuteAsync(
+            "INSERT OR IGNORE INTO houses (id, name, booking_color, description, photo_url, amenities, created_at) VALUES (@Id, @Name, @BookingColor, @Description, @PhotoUrl, @Amenities, @CreatedAt)",
+            new { house.Id, house.Name, house.BookingColor, house.Description, house.PhotoUrl,
+                  Amenities = System.Text.Json.JsonSerializer.Serialize(house.Amenities), house.CreatedAt });
+        return house;
+    }
+
+    public async Task<House> SeedLegacyHouseAsync(string name = "Legacy House", string bookingColor = "#3b82f6")
+    {
+        var house = new House { Id = Guid.NewGuid(), Name = name, BookingColor = bookingColor, CreatedAt = DateTime.UtcNow };
+        await _keepAlive!.ExecuteAsync(
             "INSERT OR IGNORE INTO houses (id, name, booking_color, created_at) VALUES (@Id, @Name, @BookingColor, @CreatedAt)",
-            house);
+            new { house.Id, house.Name, house.BookingColor, house.CreatedAt });
         return house;
     }
 

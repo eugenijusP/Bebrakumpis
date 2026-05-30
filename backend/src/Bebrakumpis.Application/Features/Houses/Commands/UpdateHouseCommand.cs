@@ -6,7 +6,7 @@ using FluentValidation;
 
 namespace Bebrakumpis.Application.Features.Houses.Commands;
 
-public record UpdateHouseCommand(Guid Id, string Name, string BookingColor)
+public record UpdateHouseCommand(Guid Id, string Name, string BookingColor, string? Description, string? PhotoUrl, List<string> Amenities)
     : IRequest<Result<HouseResponse>>;
 
 public class UpdateHouseCommandHandler(
@@ -24,8 +24,15 @@ public class UpdateHouseCommandHandler(
         if (house is null)
             return Result<HouseResponse>.NotFound($"House '{command.Id}' not found.");
 
+        if (!string.Equals(house.Name, command.Name, StringComparison.OrdinalIgnoreCase)
+            && await houseRepository.ExistsForOtherAsync(command.Name, command.Id, ct))
+            return Result<HouseResponse>.Conflict($"A house named '{command.Name}' already exists.");
+
         house.Name = command.Name;
         house.BookingColor = command.BookingColor;
+        house.Description = command.Description;
+        house.PhotoUrl = command.PhotoUrl;
+        house.Amenities = command.Amenities;
 
         await houseRepository.UpdateAsync(house, ct);
 
@@ -34,6 +41,9 @@ public class UpdateHouseCommandHandler(
             Id = house.Id,
             Name = house.Name,
             BookingColor = house.BookingColor,
+            Description = house.Description,
+            PhotoUrl = house.PhotoUrl,
+            Amenities = house.Amenities,
             CreatedAt = house.CreatedAt
         });
     }

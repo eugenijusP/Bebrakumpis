@@ -4,11 +4,17 @@ import type { House } from '../types';
 export interface CreateHouseRequest {
   name: string;
   bookingColor: string;
+  description?: string | null;
+  photoUrl?: string | null;
+  amenities?: string[];
 }
 
 export interface UpdateHouseRequest {
   name: string;
   bookingColor: string;
+  description?: string | null;
+  photoUrl?: string | null;
+  amenities?: string[];
 }
 
 export async function getHouses(): Promise<House[]> {

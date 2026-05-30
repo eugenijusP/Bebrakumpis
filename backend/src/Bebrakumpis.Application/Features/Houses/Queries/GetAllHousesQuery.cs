@@ -18,6 +18,9 @@ public class GetAllHousesQueryHandler(IHouseRepository houseRepository)
             Id = h.Id,
             Name = h.Name,
             BookingColor = h.BookingColor,
+            Description = h.Description,
+            PhotoUrl = h.PhotoUrl,
+            Amenities = h.Amenities,
             CreatedAt = h.CreatedAt
         });
         return Result<IEnumerable<HouseResponse>>.Success(response);

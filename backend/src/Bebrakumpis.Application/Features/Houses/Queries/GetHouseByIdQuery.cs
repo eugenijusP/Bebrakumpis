@@ -21,6 +21,9 @@ public class GetHouseByIdQueryHandler(IHouseRepository houseRepository)
             Id = house.Id,
             Name = house.Name,
             BookingColor = house.BookingColor,
+            Description = house.Description,
+            PhotoUrl = house.PhotoUrl,
+            Amenities = house.Amenities,
             CreatedAt = house.CreatedAt
         });
     }

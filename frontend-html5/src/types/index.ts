@@ -18,6 +18,9 @@ export interface House {
   id: string;
   name: string;
   bookingColor: string;
+  description: string | null;
+  photoUrl: string | null;
+  amenities: string[];
   createdAt: string;
 }
 

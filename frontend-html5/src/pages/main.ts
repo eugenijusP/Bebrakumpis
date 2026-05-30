@@ -4,7 +4,7 @@ import { getBookings } from '../api/bookings.api';
 import { getPictures } from '../api/gallery.api';
 import { getHouses } from '../api/houses.api';
 import { escHtml, escAttr } from '../utils/escHtml';
-import type { Booking, Picture } from '../types';
+import type { Booking, House, Picture } from '../types';
 
 const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -13,35 +13,6 @@ const MONTH_NAMES = [
 
 const MAP_EMBED = 'https://maps.google.com/maps?q=55.2034698,25.4592577&z=14&hl=en&output=embed';
 const MAP_LINK = 'https://www.google.com/maps/place/Bebrakumpis/@55.2034728,25.4566774,17z';
-
-// Marketing copy keyed by house name (names + booking colours come from the API;
-// blurb/tagline/features are presentation-only and fall back to a generic cottage).
-interface HouseCopy { tagline: string; blurb: string; feats: string[]; }
-
-const HOUSE_COPY: Record<string, HouseCopy> = {
-  'Pirkia': {
-    tagline: 'The old farmhouse',
-    blurb: 'The original log farmhouse with a wood stove, a long oak table that seats the whole family, and a covered porch over the water. Warm in winter, cool under the pines in summer.',
-    feats: ['3 bedrooms', 'Wood-fired stove', 'Big kitchen', 'Lakeside porch'],
-  },
-  'Kl\u0117tis': {
-    tagline: 'The timber granary',
-    blurb: 'A restored granary turned cosy guest cabin, closest to the shore. Two snug bedrooms, a little kitchenette, and the best morning light over Lake Bebrusai.',
-    feats: ['2 bedrooms', 'Kitchenette', 'Reading nook', 'Lake view'],
-  },
-};
-
-const DEFAULT_COPY: HouseCopy = {
-  tagline: 'Lakeside cottage',
-  blurb: 'A cosy timber house on the wooded shore of Lake Bebrusai \u2014 perfect for a quiet weekend by the water.',
-  feats: ['Lake view', 'Forest at the door'],
-};
-
-// Used only if the houses endpoint is unavailable to public visitors.
-const FALLBACK_HOUSES = [
-  { name: 'Pirkia', bookingColor: '#bd5f3a' },
-  { name: 'Kl\u0117tis', bookingColor: '#4f6850' },
-];
 
 export async function renderMainPage(): Promise<void> {
   renderLayout(spinner());
@@ -52,7 +23,7 @@ export async function renderMainPage(): Promise<void> {
 
   let bookings: Booking[] = [];
   let pictures: Picture[] = [];
-  let houses: { name: string; bookingColor: string }[] = [];
+  let houses: House[] = [];
 
   try {
     [bookings, pictures, houses] = await Promise.all([
@@ -70,7 +41,7 @@ export async function renderMainPage(): Promise<void> {
     return;
   }
 
-  const houseList = houses.length ? houses : FALLBACK_HOUSES;
+  const houseList = houses;
   const teaser = pictures.slice(0, 6);
 
   document.getElementById('page-content')!.innerHTML = `
@@ -157,21 +128,30 @@ export async function renderMainPage(): Promise<void> {
   `;
 }
 
-function houseCard(h: { name: string; bookingColor: string }): string {
-  const copy = HOUSE_COPY[h.name] ?? DEFAULT_COPY;
+function houseCard(h: House): string {
+  const photo = h.photoUrl
+    ? `<img src="${escAttr(h.photoUrl)}" alt="${escAttr(h.name)}" loading="lazy"
+           onerror="if(!this.dataset.err){this.dataset.err='1';this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22260%22%3E%3Crect width=%22400%22 height=%22260%22 fill=%22%23f1e7d6%22/%3E%3C/svg%3E';}" />`
+    : `<div class="ph">${escHtml(h.name)}</div>`;
+
+  const description = h.description
+    ? `<p>${escHtml(h.description)}</p>`
+    : '';
+
+  const amenityTags = h.amenities.length
+    ? `<div class="bh-house-feats">${h.amenities.map((a) => `<span class="bh-tag">${escHtml(a)}</span>`).join('')}</div>`
+    : '';
+
   return `
     <article class="bh-house-card">
-      <div class="bh-house-img"><div class="ph">${escHtml(h.name)} &mdash; photo</div></div>
+      <div class="bh-house-img">${photo}</div>
       <div class="bh-house-body">
         <div class="row">
-          <div>
-            <div class="eyebrow" style="color:var(--ink-faint)">${escHtml(copy.tagline)}</div>
-            <h3 style="margin-top:4px">${escHtml(h.name)}</h3>
-          </div>
+          <h3 style="margin-top:4px">${escHtml(h.name)}</h3>
           <span class="bh-house-swatch" style="background:${escAttr(h.bookingColor)};margin-top:8px"></span>
         </div>
-        <p>${escHtml(copy.blurb)}</p>
-        <div class="bh-house-feats">${copy.feats.map((f) => `<span class="bh-tag">${escHtml(f)}</span>`).join('')}</div>
+        ${description}
+        ${amenityTags}
         <div style="margin-top:20px"><a href="#/calendar" class="bh-btn bh-btn-ghost bh-btn-sm">Check ${escHtml(h.name)} dates</a></div>
       </div>
     </article>

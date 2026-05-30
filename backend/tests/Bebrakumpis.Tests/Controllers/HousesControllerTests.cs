@@ -184,4 +184,52 @@ public class HousesControllerTests : IClassFixture<TestWebAppFactory>, IAsyncLif
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
+
+    [Fact]
+    public async Task Update_ShouldRoundTripRichFields_WhenUpdatedWithDescriptionPhotoAndAmenities()
+    {
+        var house = await _factory.SeedHouseAsync("Rich House");
+
+        var response = await _adminClient!.PutAsJsonAsync($"/api/v1/houses/{house.Id}", new
+        {
+            name = "Rich House",
+            bookingColor = "#3b82f6",
+            description = "A cosy lakeside cabin",
+            photoUrl = "https://example.com/photo.jpg",
+            amenities = new[] { "Lake view", "3 bedrooms" }
+        });
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal("A cosy lakeside cabin", body.GetProperty("description").GetString());
+        Assert.Equal("https://example.com/photo.jpg", body.GetProperty("photoUrl").GetString());
+        var amenities = body.GetProperty("amenities").EnumerateArray().Select(a => a.GetString()!).ToArray();
+        Assert.Equal(["Lake view", "3 bedrooms"], amenities);
+    }
+
+    [Fact]
+    public async Task Update_ShouldReturn409_WhenRenamedToExistingHouseName()
+    {
+        await _factory.SeedHouseAsync("Occupied Name");
+        var house = await _factory.SeedHouseAsync("Free Name");
+
+        var response = await _adminClient!.PutAsJsonAsync($"/api/v1/houses/{house.Id}",
+            new { name = "Occupied Name", bookingColor = "#3b82f6" });
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetById_ShouldReturnEmptyAmenities_WhenAmenitiesColumnIsNull()
+    {
+        var house = await _factory.SeedLegacyHouseAsync("Null Amenities House");
+
+        var response = await _anonClient.GetAsync($"/api/v1/houses/{house.Id}");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Null(body.GetProperty("description").GetString());
+        Assert.Null(body.GetProperty("photoUrl").GetString());
+        Assert.Equal(0, body.GetProperty("amenities").GetArrayLength());
+    }
 }
