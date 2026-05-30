@@ -19,8 +19,10 @@ export function renderLayout(content: string): void {
         ${adminLinks}
       </nav>
       <div class="bh-sidebar-footer">
-        ${user ? `<span class="bh-user-name">${escHtml(user.username)}</span>
-          <button id="btn-logout" class="bh-btn bh-btn-sm">Log out</button>` : ''}
+        ${user
+          ? `<span class="bh-user-name">${escHtml(user.username)}</span>
+             <button id="btn-logout" class="bh-btn bh-btn-sm">Log out</button>`
+          : `<a href="#/login" class="bh-nav-link">Log in</a>`}
       </div>
     </aside>
     <main class="bh-main">

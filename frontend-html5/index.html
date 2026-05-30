@@ -127,6 +127,22 @@
       .bh-lightbox img { max-width: 90vw; max-height: 90vh; border-radius: 8px; object-fit: contain; cursor: default; }
       .bh-lightbox-close { position: fixed; top: 1.25rem; right: 1.5rem; color: #fff; font-size: 2rem; cursor: pointer; background: none; border: none; line-height: 1; }
 
+      /* === Main Page === */
+      .bh-hero { background: #fff; border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); padding: 2rem 2.5rem; margin-bottom: 2rem; }
+      .bh-hero-title { font-size: 2rem; font-weight: 700; color: #1a1a2e; margin-bottom: 1rem; }
+      .bh-hero-text { color: #4b5563; line-height: 1.7; margin-bottom: 0.75rem; }
+      .bh-hero-text:last-child { margin-bottom: 0; }
+      .bh-section { margin-bottom: 2.5rem; }
+      .bh-section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+      .bh-section-title { font-size: 1.25rem; font-weight: 700; color: #1a1a2e; margin-bottom: 1rem; }
+      .bh-section-header .bh-section-title { margin-bottom: 0; }
+      .bh-gallery-teaser-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; }
+      .bh-gallery-teaser-item { position: relative; background: #f3f4f6; border-radius: 10px; overflow: hidden; aspect-ratio: 4/3; }
+      .bh-gallery-teaser-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+      .bh-gallery-teaser-item img.bh-gallery-broken { object-fit: contain; opacity: 0.4; }
+      .bh-gallery-teaser-link { color: #6366f1; font-size: 0.925rem; font-weight: 500; }
+      .bh-gallery-teaser-link:hover { text-decoration: underline; }
+
       /* === Responsive === */
       @media (max-width: 768px) {
         .bh-sidebar { width: 200px; }
