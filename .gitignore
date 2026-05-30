@@ -8,7 +8,6 @@ backend/**/*.DotSettings.user
 # .NET secrets
 backend/**/appsettings.*.json
 !backend/**/appsettings.json
-!backend/**/appsettings.Development.json
 
 # Frontend
 frontend-html5/node_modules/
