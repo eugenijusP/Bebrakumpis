@@ -25,7 +25,7 @@ public class UpdateHouseCommandTests
         _repoMock.Setup(r => r.GetByIdAsync(id, default)).ReturnsAsync(house);
 
         var result = await _handler.HandleAsync(
-            new UpdateHouseCommand(id, "New Name", "#3b82f6"), default);
+            new UpdateHouseCommand(id, "New Name", "#3b82f6", null, null, []), default);
 
         Assert.True(result.IsSuccess);
         Assert.Equal("New Name", result.Value.Name);
@@ -39,7 +39,7 @@ public class UpdateHouseCommandTests
         _repoMock.Setup(r => r.GetByIdAsync(It.IsAny<Guid>(), default)).ReturnsAsync((House?)null);
 
         var result = await _handler.HandleAsync(
-            new UpdateHouseCommand(Guid.NewGuid(), "Name", "#3b82f6"), default);
+            new UpdateHouseCommand(Guid.NewGuid(), "Name", "#3b82f6", null, null, []), default);
 
         Assert.False(result.IsSuccess);
         Assert.Equal(ErrorType.NotFound, result.ErrorType);
@@ -49,7 +49,7 @@ public class UpdateHouseCommandTests
     public async Task HandleAsync_ShouldReturnValidationFailure_WhenColorIsInvalidHex()
     {
         var result = await _handler.HandleAsync(
-            new UpdateHouseCommand(Guid.NewGuid(), "Name", "bad"), default);
+            new UpdateHouseCommand(Guid.NewGuid(), "Name", "bad", null, null, []), default);
 
         Assert.False(result.IsSuccess);
         Assert.Equal(ErrorType.ValidationFailure, result.ErrorType);

@@ -24,7 +24,7 @@ public class CreateHouseCommandTests
         _repoMock.Setup(r => r.CreateAsync(It.IsAny<House>(), default)).ReturnsAsync(Guid.NewGuid());
 
         var result = await _handler.HandleAsync(
-            new CreateHouseCommand("Namas 1", "#3b82f6"), default);
+            new CreateHouseCommand("Namas 1", "#3b82f6", null, null, []), default);
 
         Assert.True(result.IsSuccess);
         Assert.Equal("Namas 1", result.Value.Name);
@@ -37,7 +37,7 @@ public class CreateHouseCommandTests
         _repoMock.Setup(r => r.ExistsAsync("Namas 1", default)).ReturnsAsync(true);
 
         var result = await _handler.HandleAsync(
-            new CreateHouseCommand("Namas 1", "#3b82f6"), default);
+            new CreateHouseCommand("Namas 1", "#3b82f6", null, null, []), default);
 
         Assert.False(result.IsSuccess);
         Assert.Equal(ErrorType.Conflict, result.ErrorType);
@@ -48,7 +48,7 @@ public class CreateHouseCommandTests
     public async Task HandleAsync_ShouldReturnValidationFailure_WhenNameIsEmpty()
     {
         var result = await _handler.HandleAsync(
-            new CreateHouseCommand("", "#3b82f6"), default);
+            new CreateHouseCommand("", "#3b82f6", null, null, []), default);
 
         Assert.False(result.IsSuccess);
         Assert.Equal(ErrorType.ValidationFailure, result.ErrorType);
@@ -59,7 +59,7 @@ public class CreateHouseCommandTests
     public async Task HandleAsync_ShouldReturnValidationFailure_WhenColorIsInvalidHex()
     {
         var result = await _handler.HandleAsync(
-            new CreateHouseCommand("Namas 1", "not-a-color"), default);
+            new CreateHouseCommand("Namas 1", "not-a-color", null, null, []), default);
 
         Assert.False(result.IsSuccess);
         Assert.Equal(ErrorType.ValidationFailure, result.ErrorType);

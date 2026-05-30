@@ -40,7 +40,7 @@ public class HousesController(IMediator mediator) : ControllerBase
     public async Task<IActionResult> Create([FromBody] CreateHouseRequest request, CancellationToken ct)
     {
         var result = await mediator.SendAsync(
-            new CreateHouseCommand(request.Name, request.BookingColor), ct);
+            new CreateHouseCommand(request.Name, request.BookingColor, request.Description, request.PhotoUrl, request.Amenities), ct);
         if (!result.IsSuccess)
             return result.ToProblemResult(this);
 
@@ -57,7 +57,7 @@ public class HousesController(IMediator mediator) : ControllerBase
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateHouseRequest request, CancellationToken ct)
     {
         var result = await mediator.SendAsync(
-            new UpdateHouseCommand(id, request.Name, request.BookingColor), ct);
+            new UpdateHouseCommand(id, request.Name, request.BookingColor, request.Description, request.PhotoUrl, request.Amenities), ct);
         return result.ToActionResult(this, Ok);
     }
 

@@ -7,7 +7,7 @@ using FluentValidation;
 
 namespace Bebrakumpis.Application.Features.Houses.Commands;
 
-public record CreateHouseCommand(string Name, string BookingColor)
+public record CreateHouseCommand(string Name, string BookingColor, string? Description, string? PhotoUrl, List<string> Amenities)
     : IRequest<Result<HouseResponse>>;
 
 public class CreateHouseCommandHandler(
@@ -29,6 +29,9 @@ public class CreateHouseCommandHandler(
             Id = Guid.NewGuid(),
             Name = command.Name,
             BookingColor = command.BookingColor,
+            Description = command.Description,
+            PhotoUrl = command.PhotoUrl,
+            Amenities = command.Amenities,
             CreatedAt = DateTime.UtcNow
         };
 
@@ -39,6 +42,9 @@ public class CreateHouseCommandHandler(
             Id = house.Id,
             Name = house.Name,
             BookingColor = house.BookingColor,
+            Description = house.Description,
+            PhotoUrl = house.PhotoUrl,
+            Amenities = house.Amenities,
             CreatedAt = house.CreatedAt
         });
     }
