@@ -26,5 +26,8 @@ frontend-html5/.env.*.local
 .DS_Store
 Thumbs.db
 
+# Local test assets
+Foto/
+
 #claude local
 .claude/

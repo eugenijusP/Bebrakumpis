@@ -19,6 +19,20 @@ public class UploadPictureCommandTests
         _handler = new UploadPictureCommandHandler(_repoMock.Object, _blobMock.Object, new UploadPictureCommandValidator());
     }
 
+    private static MemoryStream JpegStream()
+    {
+        var bytes = new byte[100];
+        bytes[0] = 0xFF; bytes[1] = 0xD8; bytes[2] = 0xFF;
+        return new MemoryStream(bytes);
+    }
+
+    private static MemoryStream PngStream()
+    {
+        var bytes = new byte[100];
+        bytes[0] = 0x89; bytes[1] = 0x50; bytes[2] = 0x4E; bytes[3] = 0x47;
+        return new MemoryStream(bytes);
+    }
+
     [Fact]
     public async Task HandleAsync_ShouldReturnPictureResponse_WhenJpegUploaded()
     {
@@ -27,7 +41,7 @@ public class UploadPictureCommandTests
         _blobMock.Setup(b => b.UploadAsync(It.IsAny<Stream>(), "image/jpeg", It.IsAny<string>(), default))
             .ReturnsAsync("https://fake.blob/photo.jpg");
 
-        using var stream = new MemoryStream(new byte[100]);
+        using var stream = JpegStream();
         var result = await _handler.HandleAsync(
             new UploadPictureCommand(stream, 100, "image/jpeg", "photo.jpg"), default);
 
@@ -78,7 +92,7 @@ public class UploadPictureCommandTests
         _blobMock.Setup(b => b.UploadAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<string>(), default))
             .ReturnsAsync("https://fake.blob/photo.jpg");
 
-        using var stream = new MemoryStream(new byte[100]);
+        using var stream = PngStream();
         var result = await _handler.HandleAsync(
             new UploadPictureCommand(stream, 100, "image/png", "photo.png"), default);
 

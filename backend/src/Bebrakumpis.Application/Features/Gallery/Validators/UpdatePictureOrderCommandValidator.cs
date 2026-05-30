@@ -7,6 +7,6 @@ public class UpdatePictureOrderCommandValidator : AbstractValidator<UpdatePictur
 {
     public UpdatePictureOrderCommandValidator()
     {
-        RuleFor(x => x.NewOrder).GreaterThanOrEqualTo(0).WithMessage("Order must be 0 or greater.");
+        RuleFor(x => x.Order).GreaterThanOrEqualTo(0).WithMessage("Order must be 0 or greater.");
     }
 }

@@ -6,7 +6,7 @@ using FluentValidation;
 
 namespace Bebrakumpis.Application.Features.Gallery.Commands;
 
-public record UpdatePictureOrderCommand(Guid Id, int NewOrder) : IRequest<Result<PictureResponse>>;
+public record UpdatePictureOrderCommand(Guid Id, int Order) : IRequest<Result<PictureResponse>>;
 
 public class UpdatePictureOrderCommandHandler(
     IPictureRepository pictureRepository,
@@ -23,8 +23,8 @@ public class UpdatePictureOrderCommandHandler(
         if (picture is null)
             return Result<PictureResponse>.NotFound($"Picture '{command.Id}' not found.");
 
-        await pictureRepository.UpdateOrderAsync(command.Id, command.NewOrder, ct);
-        picture.Order = command.NewOrder;
+        await pictureRepository.UpdateOrderAsync(command.Id, command.Order, ct);
+        picture.Order = command.Order;
 
         return Result<PictureResponse>.Success(new PictureResponse
         {

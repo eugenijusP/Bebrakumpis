@@ -37,7 +37,15 @@ public class UploadPictureCommandHandler(
             UploadedAt = DateTime.UtcNow
         };
 
-        await pictureRepository.CreateAsync(picture, ct);
+        try
+        {
+            await pictureRepository.CreateAsync(picture, ct);
+        }
+        catch
+        {
+            await blobStorageService.DeleteByUrlAsync(blobUrl, ct);
+            throw;
+        }
 
         return Result<PictureResponse>.Success(new PictureResponse
         {

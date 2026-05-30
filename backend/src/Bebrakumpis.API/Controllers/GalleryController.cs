@@ -27,8 +27,11 @@ public class GalleryController(IMediator mediator) : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> Upload(IFormFile file, CancellationToken ct)
+    public async Task<IActionResult> Upload(IFormFile? file, CancellationToken ct)
     {
+        if (file is null || file.Length == 0)
+            return ValidationProblem("A file is required.");
+
         var result = await mediator.SendAsync(
             new UploadPictureCommand(file.OpenReadStream(), file.Length, file.ContentType, file.FileName), ct);
         if (!result.IsSuccess)

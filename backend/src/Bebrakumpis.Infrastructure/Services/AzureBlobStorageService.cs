@@ -7,26 +7,21 @@ namespace Bebrakumpis.Infrastructure.Services;
 
 public class AzureBlobStorageService(IConfiguration configuration) : IBlobStorageService
 {
-    private BlobContainerClient GetContainer()
-    {
-        var connectionString = configuration["AzureBlobStorage:ConnectionString"]!;
-        var containerName = configuration["AzureBlobStorage:ContainerName"]!;
-        return new BlobContainerClient(connectionString, containerName);
-    }
+    private readonly BlobContainerClient _containerClient = new(
+        configuration["AzureBlobStorage:ConnectionString"]!,
+        configuration["AzureBlobStorage:ContainerName"]!);
 
     public async Task<string> UploadAsync(Stream content, string contentType, string blobName, CancellationToken cancellationToken = default)
     {
-        var container = GetContainer();
-        var blobClient = container.GetBlobClient(blobName);
+        var blobClient = _containerClient.GetBlobClient(blobName);
         await blobClient.UploadAsync(content, new BlobHttpHeaders { ContentType = contentType }, cancellationToken: cancellationToken);
         return blobClient.Uri.ToString();
     }
 
     public async Task DeleteByUrlAsync(string blobUrl, CancellationToken cancellationToken = default)
     {
-        var container = GetContainer();
-        var blobName = new Uri(blobUrl).Segments.Last();
-        var blobClient = container.GetBlobClient(blobName);
+        var blobName = new BlobUriBuilder(new Uri(blobUrl)).BlobName;
+        var blobClient = _containerClient.GetBlobClient(blobName);
         await blobClient.DeleteIfExistsAsync(cancellationToken: cancellationToken);
     }
 }
