@@ -11,8 +11,10 @@ import type { Booking, House } from '../types';
 const DAYS_OF_WEEK = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December'
+  'July', 'August', 'September', 'October', 'November', 'December',
 ];
+const COLOR_BOOKED = '#bd5f3a';
+const COLOR_RESERVED = '#c79a4e';
 
 let _year = new Date().getFullYear();
 let _month = new Date().getMonth() + 1;
@@ -21,64 +23,101 @@ let _houses: House[] = [];
 let _editingId: string | null = null;
 let _tooltip: HTMLElement | null = null;
 
+function addMonth(year: number, month: number, delta: number): [number, number] {
+  let m = month + delta;
+  let y = year;
+  while (m > 12) { m -= 12; y++; }
+  while (m < 1) { m += 12; y--; }
+  return [y, m];
+}
+
 export async function renderCalendar(): Promise<void> {
   renderLayout(spinner());
-
-  const role = currentUser()?.role ?? null;
-
-  try {
-    const [bookings, houses] = await Promise.all([
-      getBookings(_year, _month),
-      role !== null ? getHouses() : Promise.resolve([]),
-    ]);
-    _bookings = bookings.map(b => ({ ...b, startDate: b.startDate.substring(0, 10), endDate: b.endDate.substring(0, 10) }));
-    _houses = houses;
-  } catch {
-    document.getElementById('page-content')!.innerHTML = errorMessage('Failed to load calendar.');
-    return;
-  }
-
+  await loadBookings();
   renderPage();
   attachEvents();
 }
 
+async function loadBookings(): Promise<void> {
+  const [ny, nm] = addMonth(_year, _month, 1);
+  try {
+    const [b1, b2, houses] = await Promise.all([
+      getBookings(_year, _month),
+      getBookings(ny, nm),
+      getHouses().catch(() => [] as House[]),
+    ]);
+    const merged = [...b1, ...b2];
+    const seen = new Set<string>();
+    _bookings = merged
+      .filter((b) => (seen.has(b.id) ? false : (seen.add(b.id), true)))
+      .map((b) => ({ ...b, startDate: b.startDate.substring(0, 10), endDate: b.endDate.substring(0, 10) }));
+    _houses = houses;
+  } catch {
+    document.getElementById('page-content')!.innerHTML = errorMessage('Failed to load calendar.');
+  }
+}
+
 function renderPage(): void {
   const content = document.getElementById('page-content')!;
+  if (!content) return;
   const admin = isAdmin();
-  const user = currentUser();
+  const authenticated = currentUser() !== null;
+  const [ny, nm] = addMonth(_year, _month, 1);
+  const legend = _houses.length
+    ? _houses.map((h) => `<span class="bh-legend-item"><span class="bh-legend-sw" style="background:${escAttr(h.bookingColor)}"></span> ${escHtml(h.name)}</span>`).join('')
+    : '';
 
   content.innerHTML = `
     <div class="bh-page-header">
-      <h2 class="bh-page-title">Calendar</h2>
-      ${admin ? `<button id="btn-add-booking" class="bh-btn bh-btn-primary">Add Booking</button>` : ''}
+      <div class="bh-section-head" style="margin-bottom:0">
+        <div class="eyebrow">Availability</div>
+        <h2 class="bh-page-title">When the houses are free</h2>
+      </div>
+      ${admin ? `<button id="btn-add-booking" class="bh-btn bh-btn-primary">Add booking</button>` : ''}
     </div>
+
     <div class="bh-cal-nav">
-      <button id="btn-prev-month" class="bh-btn bh-btn-sm">&#8249;</button>
-      <span class="bh-cal-title">${escHtml(MONTH_NAMES[_month - 1])} ${_year}</span>
-      <button id="btn-next-month" class="bh-btn bh-btn-sm">&#8250;</button>
+      <button id="btn-prev-month" class="bh-cal-navbtn" aria-label="Previous month">&#8249;</button>
+      <button id="btn-next-month" class="bh-cal-navbtn" aria-label="Next month">&#8250;</button>
+      <button id="btn-today" class="bh-btn bh-btn-ghost bh-btn-sm">Today</button>
+      <div class="bh-cal-legend">
+        ${legend}
+      </div>
     </div>
-    <div class="bh-cal-grid" id="cal-grid">
-      ${DAYS_OF_WEEK.map(d => `<div class="bh-cal-dow">${escHtml(d)}</div>`).join('')}
-      ${buildDayCells(admin, user !== null)}
+
+    <div class="bh-cal-two" id="cal-two">
+      ${monthBlock(_year, _month, admin, authenticated)}
+      ${monthBlock(ny, nm, admin, authenticated)}
     </div>
 
     ${admin ? bookingFormModal() : ''}
   `;
 }
 
-function buildDayCells(admin: boolean, authenticated: boolean): string {
+function monthBlock(year: number, month: number, admin: boolean, authenticated: boolean): string {
+  return `
+    <div class="bh-cal-month">
+      <div class="bh-cal-month-title">${escHtml(MONTH_NAMES[month - 1])} ${year}</div>
+      <div class="bh-cal-grid">
+        ${DAYS_OF_WEEK.map((d) => `<div class="bh-cal-dow">${escHtml(d)}</div>`).join('')}
+        ${buildDayCells(year, month, admin, authenticated)}
+      </div>
+    </div>
+  `;
+}
+
+function buildDayCells(year: number, month: number, admin: boolean, authenticated: boolean): string {
   const today = new Date();
-  const firstOfMonth = new Date(_year, _month - 1, 1);
-  // Monday-based: getDay() returns 0=Sun...6=Sat; convert to 0=Mon...6=Sun
+  const firstOfMonth = new Date(year, month - 1, 1);
   const startOffset = (firstOfMonth.getDay() + 6) % 7;
-  const daysInMonth = new Date(_year, _month, 0).getDate();
+  const daysInMonth = new Date(year, month, 0).getDate();
   const totalCells = Math.ceil((startOffset + daysInMonth) / 7) * 7;
 
   const cells: string[] = [];
   for (let i = 0; i < totalCells; i++) {
     const dayNum = i - startOffset + 1;
     const isCurrentMonth = dayNum >= 1 && dayNum <= daysInMonth;
-    const date = new Date(_year, _month - 1, dayNum);
+    const date = new Date(year, month - 1, dayNum);
     const dateStr = toDateStr(date);
     const isToday = isCurrentMonth &&
       date.getFullYear() === today.getFullYear() &&
@@ -86,44 +125,41 @@ function buildDayCells(admin: boolean, authenticated: boolean): string {
       date.getDate() === today.getDate();
 
     const dayBookings = isCurrentMonth
-      ? _bookings.filter(b => b.startDate <= dateStr && b.endDate >= dateStr)
+      ? _bookings.filter((b) => b.startDate <= dateStr && b.endDate >= dateStr)
       : [];
 
     cells.push(`
       <div class="bh-cal-day${!isCurrentMonth ? ' bh-cal-other-month' : ''}${isToday ? ' bh-cal-today' : ''}">
         <div class="bh-cal-day-num">${isCurrentMonth ? dayNum : ''}</div>
-        ${dayBookings.map(b => bookingBand(b, dateStr, admin, authenticated)).join('')}
+        ${dayBookings.map((b) => bookingBand(b, admin, authenticated)).join('')}
       </div>
     `);
   }
   return cells.join('');
 }
 
-function bookingBand(b: Booking, dateStr: string, admin: boolean, authenticated: boolean): string {
-  const house = _houses.find(h => h.id === b.houseId);
-  const color = house?.bookingColor ?? '#6366f1';
-  const isFirst = b.startDate === dateStr || isFirstDayOfWeek(dateStr);
-  const label = isFirst ? escHtml(b.displayText) : '&nbsp;';
+function bookingBand(b: Booking, admin: boolean, authenticated: boolean): string {
+  const house = _houses.find((h) => h.id === b.houseId);
+  const color = house?.bookingColor ?? (b.type === 'B' ? COLOR_BOOKED : COLOR_RESERVED);
+  // Public visitors see which house (by colour/name); logged-in family see the label.
+  const text = authenticated ? b.displayText : (house?.name ?? (b.type === 'B' ? 'Booked' : 'Reserved'));
+  const label = escHtml(text);
   const reservedClass = b.type === 'R' ? ' bh-cal-band-reserved' : '';
+  const textColor = b.type === 'R' && !house ? '#3a2c0e' : '#fff';
 
   const editControls = admin
     ? `<span class="bh-cal-band-actions">
         <button class="bh-cal-band-btn" data-edit="${escAttr(b.id)}" title="Edit">&#9998;</button>
-        <button class="bh-cal-band-btn" data-delete="${escAttr(b.id)}" title="Delete">&#215;</button>
+        <button class="bh-cal-band-btn" data-delete="${escAttr(b.id)}" title="Delete">&times;</button>
        </span>`
     : '';
 
   return `<div class="bh-cal-band${reservedClass}"
-    style="background-color:${escAttr(color)}"
+    style="background-color:${escAttr(color)};color:${textColor}"
     data-booking-id="${escAttr(b.id)}"
     data-authenticated="${authenticated}">
     ${label}${editControls}
   </div>`;
-}
-
-function isFirstDayOfWeek(dateStr: string): boolean {
-  const d = new Date(dateStr);
-  return d.getDay() === 1; // Monday
 }
 
 function toDateStr(d: Date): string {
@@ -134,14 +170,14 @@ function toDateStr(d: Date): string {
 }
 
 function bookingFormModal(): string {
-  const houseOptions = _houses.map(h =>
+  const houseOptions = _houses.map((h) =>
     `<option value="${escAttr(h.id)}">${escHtml(h.name)}</option>`
   ).join('');
 
   return `
     <div id="modal-booking" class="bh-modal" onclick="window._closeBookingModalOnBackdrop(event)">
       <div class="bh-modal-inner">
-        <h3 class="bh-modal-title" id="modal-booking-title">Add Booking</h3>
+        <h3 class="bh-modal-title" id="modal-booking-title">Add booking</h3>
         <form id="booking-form" class="bh-form" novalidate>
           <div class="bh-form-group">
             <label for="booking-house" class="bh-label">House</label>
@@ -159,16 +195,16 @@ function bookingFormModal(): string {
           </div>
           <div class="bh-form-grid bh-form-grid-2">
             <div class="bh-form-group">
-              <label for="booking-start" class="bh-label">Start Date</label>
+              <label for="booking-start" class="bh-label">Start date</label>
               <input id="booking-start" type="date" class="bh-input" required />
             </div>
             <div class="bh-form-group">
-              <label for="booking-end" class="bh-label">End Date</label>
+              <label for="booking-end" class="bh-label">End date</label>
               <input id="booking-end" type="date" class="bh-input" required />
             </div>
           </div>
           <div class="bh-form-group">
-            <label for="booking-display-text" class="bh-label">Display Text <span style="color:#9ca3af">(max 50)</span></label>
+            <label for="booking-display-text" class="bh-label">Display text <span style="color:var(--ink-faint)">(max 50)</span></label>
             <input id="booking-display-text" type="text" class="bh-input" maxlength="50" required />
           </div>
           <div class="bh-form-group">
@@ -176,9 +212,9 @@ function bookingFormModal(): string {
             <textarea id="booking-notes" class="bh-input" rows="3" maxlength="1000"></textarea>
           </div>
           <div id="booking-form-error" class="bh-error-message" style="display:none"></div>
-          <div style="display:flex;gap:0.75rem;justify-content:flex-end;margin-top:0.5rem">
-            <button type="button" id="btn-cancel-booking" class="bh-btn">Cancel</button>
-            <button type="submit" id="btn-save-booking" class="bh-btn bh-btn-primary">Save</button>
+          <div style="display:flex;gap:0.75rem;justify-content:flex-end;margin-top:0.25rem">
+            <button type="button" id="btn-cancel-booking" class="bh-btn bh-btn-ghost">Cancel</button>
+            <button type="submit" id="btn-save-booking" class="bh-btn bh-btn-primary">Save booking</button>
           </div>
         </form>
       </div>
@@ -189,6 +225,7 @@ function bookingFormModal(): string {
 function attachEvents(): void {
   document.getElementById('btn-prev-month')?.addEventListener('click', () => changeMonth(-1));
   document.getElementById('btn-next-month')?.addEventListener('click', () => changeMonth(1));
+  document.getElementById('btn-today')?.addEventListener('click', goToday);
 
   document.getElementById('btn-add-booking')?.addEventListener('click', () => {
     _editingId = null;
@@ -197,7 +234,7 @@ function attachEvents(): void {
 
   document.getElementById('btn-cancel-booking')?.addEventListener('click', () => closeModal('modal-booking'));
 
-  document.getElementById('booking-form')?.addEventListener('submit', async e => {
+  document.getElementById('booking-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     await saveBooking();
   });
@@ -205,7 +242,7 @@ function attachEvents(): void {
   (window as unknown as Record<string, unknown>)._closeBookingModalOnBackdrop =
     (e: MouseEvent) => closeModalOnBackdrop('modal-booking', e);
 
-  const grid = document.getElementById('cal-grid');
+  const grid = document.getElementById('cal-two');
   if (grid) {
     grid.addEventListener('click', handleGridClick);
     grid.addEventListener('mouseover', handleBandMouseover);
@@ -232,14 +269,10 @@ function handleGridClick(e: Event): void {
 function handleBandMouseover(e: Event): void {
   const band = (e.target as HTMLElement).closest('.bh-cal-band') as HTMLElement | null;
   if (!band) return;
-  const authenticated = band.dataset['authenticated'] === 'true';
-  if (!authenticated) return;
-
   const bookingId = band.dataset['bookingId'];
-  const booking = _bookings.find(b => b.id === bookingId);
+  const booking = _bookings.find((b) => b.id === bookingId);
   if (!booking) return;
-
-  showTooltip(e as MouseEvent, booking);
+  showTooltip(e as MouseEvent, booking, band.dataset['authenticated'] === 'true');
 }
 
 function handleBandMouseout(e: Event): void {
@@ -249,15 +282,16 @@ function handleBandMouseout(e: Event): void {
   }
 }
 
-function showTooltip(e: MouseEvent, b: Booking): void {
+function showTooltip(e: MouseEvent, b: Booking, authenticated: boolean): void {
   hideTooltip();
   _tooltip = document.createElement('div');
   _tooltip.className = 'bh-cal-tooltip';
+  const title = authenticated ? escHtml(b.displayText) : (b.type === 'B' ? 'Booked' : 'Reserved (tentative)');
   _tooltip.innerHTML = `
-    <div class="bh-cal-tooltip-title">${escHtml(b.displayText)}</div>
-    <div class="bh-cal-tooltip-row">${escHtml(b.startDate)} – ${escHtml(b.endDate)}</div>
-    ${b.notes ? `<div class="bh-cal-tooltip-row">${escHtml(b.notes)}</div>` : ''}
-    ${b.createdByName ? `<div class="bh-cal-tooltip-row">Added by ${escHtml(b.createdByName)}${b.createdAt ? ` on ${new Date(b.createdAt).toLocaleDateString()}` : ''}</div>` : ''}
+    <div class="bh-cal-tooltip-title">${title}</div>
+    <div class="bh-cal-tooltip-row">${escHtml(b.startDate)} &ndash; ${escHtml(b.endDate)}</div>
+    ${authenticated && b.notes ? `<div class="bh-cal-tooltip-row">${escHtml(b.notes)}</div>` : ''}
+    ${authenticated && b.createdByName ? `<div class="bh-cal-tooltip-row">Added by ${escHtml(b.createdByName)}</div>` : ''}
   `;
   document.body.appendChild(_tooltip);
   positionTooltip(e);
@@ -265,10 +299,8 @@ function showTooltip(e: MouseEvent, b: Booking): void {
 
 function positionTooltip(e: MouseEvent): void {
   if (!_tooltip) return;
-  const x = Math.min(e.clientX + 12, window.innerWidth - 280);
-  const y = Math.min(e.clientY + 12, window.innerHeight - 160);
-  _tooltip.style.left = `${x}px`;
-  _tooltip.style.top = `${y}px`;
+  _tooltip.style.left = `${Math.min(e.clientX + 12, window.innerWidth - 270)}px`;
+  _tooltip.style.top = `${Math.min(e.clientY + 12, window.innerHeight - 130)}px`;
 }
 
 function hideTooltip(): void {
@@ -277,10 +309,10 @@ function hideTooltip(): void {
 }
 
 function openBookingModal(editId?: string): void {
-  const booking = editId ? _bookings.find(b => b.id === editId) : null;
+  const booking = editId ? _bookings.find((b) => b.id === editId) : null;
 
   const titleEl = document.getElementById('modal-booking-title');
-  if (titleEl) titleEl.textContent = booking ? 'Edit Booking' : 'Add Booking';
+  if (titleEl) titleEl.textContent = booking ? 'Edit booking' : 'Add booking';
 
   (document.getElementById('booking-house') as HTMLSelectElement).value = booking?.houseId ?? '';
   (document.getElementById('booking-type') as HTMLSelectElement).value = booking?.type ?? 'B';
@@ -317,10 +349,9 @@ async function saveBooking(): Promise<void> {
       await createBooking({ houseId, type, startDate, endDate, displayText, notes });
     }
     closeModal('modal-booking');
-    await reloadBookings();
+    await reload();
   } catch (err) {
-    const msg = err instanceof ApiError ? err.message : 'Failed to save booking.';
-    errEl.textContent = msg;
+    errEl.textContent = err instanceof ApiError ? err.message : 'Failed to save booking.';
     errEl.style.display = 'block';
   } finally {
     saveBtn.disabled = false;
@@ -328,31 +359,30 @@ async function saveBooking(): Promise<void> {
 }
 
 async function confirmDelete(id: string): Promise<void> {
-  const booking = _bookings.find(b => b.id === id);
+  const booking = _bookings.find((b) => b.id === id);
   if (!confirm(`Delete booking "${booking?.displayText ?? id}"?`)) return;
 
   try {
     await deleteBooking(id);
-    await reloadBookings();
+    await reload();
   } catch (err) {
     alert(err instanceof ApiError ? err.message : 'Failed to delete booking.');
   }
 }
 
 async function changeMonth(delta: number): Promise<void> {
-  _month += delta;
-  if (_month > 12) { _month = 1; _year++; }
-  if (_month < 1) { _month = 12; _year--; }
-  await reloadBookings();
+  [_year, _month] = addMonth(_year, _month, delta);
+  await reload();
 }
 
-async function reloadBookings(): Promise<void> {
-  try {
-    const fresh = await getBookings(_year, _month);
-    _bookings = fresh.map(b => ({ ...b, startDate: b.startDate.substring(0, 10), endDate: b.endDate.substring(0, 10) }));
-  } catch {
-    // keep previous bookings on error
-  }
+function goToday(): void {
+  _year = new Date().getFullYear();
+  _month = new Date().getMonth() + 1;
+  reload();
+}
+
+async function reload(): Promise<void> {
+  await loadBookings();
   renderPage();
   attachEvents();
 }

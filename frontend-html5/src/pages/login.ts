@@ -6,7 +6,8 @@ export async function renderLogin(): Promise<void> {
   document.getElementById('app')!.innerHTML = `
     <div class="bh-login-page">
       <div class="bh-login-card">
-        <h1 class="bh-login-title">Bebrakumpis</h1>
+        <h1 class="bh-login-title">Welcome back</h1>
+        <p class="bh-login-sub">Sign in to manage houses, photos &amp; bookings.</p>
         <form id="login-form" class="bh-form" novalidate>
           <div class="bh-form-group">
             <label for="username" class="bh-label">Username</label>
@@ -35,6 +36,7 @@ export async function renderLogin(): Promise<void> {
             Log in
           </button>
         </form>
+        <div class="bh-login-demo">demo &middot; admin / Admin@123</div>
       </div>
     </div>
   `;
