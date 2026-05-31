@@ -39,19 +39,18 @@ export async function renderCalendar(): Promise<void> {
 }
 
 async function loadBookings(): Promise<void> {
-  const [ny, nm] = addMonth(_year, _month, 1);
+  const months: [number, number][] = [0, 1, 2, 3].map(d => addMonth(_year, _month, d));
   try {
-    const [b1, b2, houses] = await Promise.all([
-      getBookings(_year, _month),
-      getBookings(ny, nm),
+    const [houses, ...bookingResults] = await Promise.all([
       getHouses().catch(() => [] as House[]),
+      ...months.map(([y, m]) => getBookings(y, m)),
     ]);
-    const merged = [...b1, ...b2];
+    const merged = (bookingResults as Booking[][]).flat();
     const seen = new Set<string>();
     _bookings = merged
       .filter((b) => (seen.has(b.id) ? false : (seen.add(b.id), true)))
       .map((b) => ({ ...b, startDate: b.startDate.substring(0, 10), endDate: b.endDate.substring(0, 10) }));
-    _houses = houses;
+    _houses = houses as House[];
   } catch {
     document.getElementById('page-content')!.innerHTML = errorMessage('Failed to load calendar.');
   }
@@ -61,8 +60,7 @@ function renderPage(): void {
   const content = document.getElementById('page-content')!;
   if (!content) return;
   const admin = isAdmin();
-  const authenticated = currentUser() !== null;
-  const [ny, nm] = addMonth(_year, _month, 1);
+  const months: [number, number][] = [0, 1, 2, 3].map(d => addMonth(_year, _month, d));
   const legend = _houses.length
     ? _houses.map((h) => `<span class="bh-legend-item"><span class="bh-legend-sw" style="background:${escAttr(h.bookingColor)}"></span> ${escHtml(h.name)}</span>`).join('')
     : '';
@@ -86,27 +84,26 @@ function renderPage(): void {
     </div>
 
     <div class="bh-cal-two" id="cal-two">
-      ${monthBlock(_year, _month, admin, authenticated)}
-      ${monthBlock(ny, nm, admin, authenticated)}
+      ${months.map(([y, m]) => monthBlock(y, m, admin)).join('')}
     </div>
 
     ${admin ? bookingFormModal() : ''}
   `;
 }
 
-function monthBlock(year: number, month: number, admin: boolean, authenticated: boolean): string {
+function monthBlock(year: number, month: number, admin: boolean): string {
   return `
     <div class="bh-cal-month">
       <div class="bh-cal-month-title">${escHtml(MONTH_NAMES[month - 1])} ${year}</div>
       <div class="bh-cal-grid">
         ${DAYS_OF_WEEK.map((d) => `<div class="bh-cal-dow">${escHtml(d)}</div>`).join('')}
-        ${buildDayCells(year, month, admin, authenticated)}
+        ${buildDayCells(year, month, admin)}
       </div>
     </div>
   `;
 }
 
-function buildDayCells(year: number, month: number, admin: boolean, authenticated: boolean): string {
+function buildDayCells(year: number, month: number, admin: boolean): string {
   const today = new Date();
   const firstOfMonth = new Date(year, month - 1, 1);
   const startOffset = (firstOfMonth.getDay() + 6) % 7;
@@ -131,18 +128,17 @@ function buildDayCells(year: number, month: number, admin: boolean, authenticate
     cells.push(`
       <div class="bh-cal-day${!isCurrentMonth ? ' bh-cal-other-month' : ''}${isToday ? ' bh-cal-today' : ''}">
         <div class="bh-cal-day-num">${isCurrentMonth ? dayNum : ''}</div>
-        ${dayBookings.map((b) => bookingBand(b, admin, authenticated)).join('')}
+        ${dayBookings.map((b) => bookingBand(b, admin)).join('')}
       </div>
     `);
   }
   return cells.join('');
 }
 
-function bookingBand(b: Booking, admin: boolean, authenticated: boolean): string {
+function bookingBand(b: Booking, admin: boolean): string {
   const house = _houses.find((h) => h.id === b.houseId);
   const color = house?.bookingColor ?? (b.type === 'B' ? COLOR_BOOKED : COLOR_RESERVED);
-  // Public visitors see which house (by colour/name); logged-in family see the label.
-  const text = authenticated ? b.displayText : (house?.name ?? (b.type === 'B' ? 'Booked' : 'Reserved'));
+  const text = b.displayText;
   const label = escHtml(text);
   const reservedClass = b.type === 'R' ? ' bh-cal-band-reserved' : '';
   const textColor = b.type === 'R' && !house ? '#3a2c0e' : '#fff';
@@ -156,8 +152,7 @@ function bookingBand(b: Booking, admin: boolean, authenticated: boolean): string
 
   return `<div class="bh-cal-band${reservedClass}"
     style="background-color:${escAttr(color)};color:${textColor}"
-    data-booking-id="${escAttr(b.id)}"
-    data-authenticated="${authenticated}">
+    data-booking-id="${escAttr(b.id)}">
     ${label}${editControls}
   </div>`;
 }
@@ -272,7 +267,7 @@ function handleBandMouseover(e: Event): void {
   const bookingId = band.dataset['bookingId'];
   const booking = _bookings.find((b) => b.id === bookingId);
   if (!booking) return;
-  showTooltip(e as MouseEvent, booking, band.dataset['authenticated'] === 'true');
+  showTooltip(e as MouseEvent, booking);
 }
 
 function handleBandMouseout(e: Event): void {
@@ -282,16 +277,15 @@ function handleBandMouseout(e: Event): void {
   }
 }
 
-function showTooltip(e: MouseEvent, b: Booking, authenticated: boolean): void {
+function showTooltip(e: MouseEvent, b: Booking): void {
   hideTooltip();
   _tooltip = document.createElement('div');
   _tooltip.className = 'bh-cal-tooltip';
-  const title = authenticated ? escHtml(b.displayText) : (b.type === 'B' ? 'Booked' : 'Reserved (tentative)');
   _tooltip.innerHTML = `
-    <div class="bh-cal-tooltip-title">${title}</div>
+    <div class="bh-cal-tooltip-title">${escHtml(b.displayText)}</div>
     <div class="bh-cal-tooltip-row">${escHtml(b.startDate)} &ndash; ${escHtml(b.endDate)}</div>
-    ${authenticated && b.notes ? `<div class="bh-cal-tooltip-row">${escHtml(b.notes)}</div>` : ''}
-    ${authenticated && b.createdByName ? `<div class="bh-cal-tooltip-row">Added by ${escHtml(b.createdByName)}</div>` : ''}
+    ${b.notes ? `<div class="bh-cal-tooltip-row">${escHtml(b.notes)}</div>` : ''}
+    ${b.createdByName ? `<div class="bh-cal-tooltip-row">Added by ${escHtml(b.createdByName)}</div>` : ''}
   `;
   document.body.appendChild(_tooltip);
   positionTooltip(e);

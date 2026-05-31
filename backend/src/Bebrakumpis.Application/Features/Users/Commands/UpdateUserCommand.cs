@@ -6,7 +6,7 @@ using FluentValidation;
 
 namespace Bebrakumpis.Application.Features.Users.Commands;
 
-public record UpdateUserCommand(Guid Id, Guid RequesterId, string FirstName, string LastName, string Role, bool IsActive)
+public record UpdateUserCommand(Guid Id, Guid RequesterId, string? FirstName, string? LastName, string Role, bool IsActive)
     : IRequest<Result<UserResponse>>;
 
 public class UpdateUserCommandHandler(

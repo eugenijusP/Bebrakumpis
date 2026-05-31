@@ -2,16 +2,16 @@ import { apiFetch } from './client';
 import type { UserRecord } from '../types';
 
 export interface CreateUserRequest {
-  firstName: string;
-  lastName: string;
+  firstName: string | null;
+  lastName: string | null;
   username: string;
   password: string;
   role: string;
 }
 
 export interface UpdateUserRequest {
-  firstName: string;
-  lastName: string;
+  firstName: string | null;
+  lastName: string | null;
   role: string;
   isActive: boolean;
 }

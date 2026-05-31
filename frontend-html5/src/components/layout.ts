@@ -21,7 +21,7 @@ export function renderLayout(content: string): void {
   document.getElementById('app')!.innerHTML = `
     <header class="bh-nav-bar">
       <div class="bh-wrap bh-nav-inner">
-        <a href="#/" class="bh-brand"><span class="dot"></span> Bebrakumpis <small>est. &rsquo;98</small></a>
+        <a href="#/" class="bh-brand"><span class="dot"></span> Bebrakumpis <small>est. &rsquo;00</small></a>
         <nav class="bh-nav-links">
           <a href="#/" class="bh-nav-link">Home</a>
           <a href="#/gallery" class="bh-nav-link">Gallery</a>
@@ -44,7 +44,6 @@ export function renderLayout(content: string): void {
           <a href="#/">Home</a>
           <a href="#/gallery">Gallery</a>
           <a href="#/calendar">Calendar</a>
-          <a href="mailto:hello@bebrakumpis.lt">hello@bebrakumpis.lt</a>
         </div>
       </div>
     </footer>
@@ -69,7 +68,6 @@ export function renderLayout(content: string): void {
             <button type="submit" id="login-btn" class="bh-btn bh-btn-primary">Log in</button>
           </div>
         </form>
-        <div class="bh-login-demo">demo &middot; admin / Admin@123</div>
       </div>
     </div>
   `;

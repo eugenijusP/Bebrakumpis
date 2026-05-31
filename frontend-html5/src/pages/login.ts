@@ -36,7 +36,6 @@ export async function renderLogin(): Promise<void> {
             Log in
           </button>
         </form>
-        <div class="bh-login-demo">demo &middot; admin / Admin@123</div>
       </div>
     </div>
   `;
