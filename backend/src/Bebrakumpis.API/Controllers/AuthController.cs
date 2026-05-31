@@ -26,8 +26,8 @@ public class AuthController(IMediator mediator) : ControllerBase
         Response.Cookies.Append("bh_auth", result.Value, new CookieOptions
         {
             HttpOnly = true,
-            Secure = Request.IsHttps,
-            SameSite = SameSiteMode.Strict,
+            Secure = true,
+            SameSite = SameSiteMode.None,
             Expires = DateTimeOffset.UtcNow.AddHours(8)
         });
 
