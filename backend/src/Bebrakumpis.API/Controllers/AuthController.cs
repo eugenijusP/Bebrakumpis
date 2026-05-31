@@ -10,7 +10,7 @@ namespace Bebrakumpis.API.Controllers;
 
 [ApiController]
 [Route("api/v1/auth")]
-public class AuthController(IMediator mediator) : ControllerBase
+public class AuthController(IMediator mediator, IWebHostEnvironment env) : ControllerBase
 {
     [HttpPost("login")]
     [AllowAnonymous]
@@ -26,8 +26,8 @@ public class AuthController(IMediator mediator) : ControllerBase
         Response.Cookies.Append("bh_auth", result.Value, new CookieOptions
         {
             HttpOnly = true,
-            Secure = Request.IsHttps,
-            SameSite = SameSiteMode.Strict,
+            Secure = !env.IsEnvironment("Testing"),
+            SameSite = env.IsEnvironment("Testing") ? SameSiteMode.Lax : SameSiteMode.None,
             Expires = DateTimeOffset.UtcNow.AddHours(8)
         });
 
