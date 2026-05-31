@@ -49,6 +49,7 @@ builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationSc
     });
 
 builder.Services.AddAuthorization();
+builder.Services.AddHealthChecks();
 
 if (!string.IsNullOrEmpty(builder.Configuration["ApplicationInsights:ConnectionString"]))
     builder.Services.AddApplicationInsightsTelemetry();
@@ -67,6 +68,7 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+app.MapHealthChecks("/api/v1/health");
 
 app.Run();
 
