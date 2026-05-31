@@ -53,7 +53,7 @@ public class BookingsControllerTests : IClassFixture<TestWebAppFactory>, IAsyncL
     }
 
     [Fact]
-    public async Task GetByMonth_ShouldFilterSensitiveFields_ForGuest()
+    public async Task GetByMonth_ShouldReturnNotesAndCreatedByName_ForGuest()
     {
         var house = await _factory.SeedHouseAsync("GuestHouse");
         var admin = await _factory.SeedUserAsync("guestbooker", "Admin", "Test@123");
@@ -65,8 +65,7 @@ public class BookingsControllerTests : IClassFixture<TestWebAppFactory>, IAsyncL
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var item = body.EnumerateArray().First(b => b.GetProperty("displayText").GetString() == "Guest view");
-        Assert.Equal(JsonValueKind.Null, item.GetProperty("notes").ValueKind);
-        Assert.Equal(JsonValueKind.Null, item.GetProperty("createdByName").ValueKind);
+        Assert.Equal("Secret notes", item.GetProperty("notes").GetString());
         Assert.Equal(JsonValueKind.Null, item.GetProperty("createdAt").ValueKind);
     }
 

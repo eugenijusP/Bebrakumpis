@@ -60,7 +60,7 @@ public class GetBookingsQueryTests
     }
 
     [Fact]
-    public async Task HandleAsync_ShouldFilterSensitiveFields_WhenCallerIsGuest()
+    public async Task HandleAsync_ShouldReturnNotesAndCreatedByName_WhenCallerIsGuest()
     {
         var booking = MakeBooking();
         _repoMock.Setup(r => r.GetByMonthAsync(2025, 6, default)).ReturnsAsync([booking]);
@@ -69,8 +69,8 @@ public class GetBookingsQueryTests
 
         Assert.True(result.IsSuccess);
         var item = result.Value.Single();
-        Assert.Null(item.Notes);
-        Assert.Null(item.CreatedByName);
+        Assert.Equal(booking.Notes, item.Notes);
+        Assert.Equal(booking.CreatedByName, item.CreatedByName);
         Assert.Null(item.CreatedAt);
         Assert.Equal(booking.DisplayText, item.DisplayText);
     }

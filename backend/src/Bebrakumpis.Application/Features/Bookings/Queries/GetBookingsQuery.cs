@@ -22,9 +22,8 @@ public class GetBookingsQueryHandler(IBookingRepository bookingRepository)
             StartDate = b.StartDate,
             EndDate = b.EndDate,
             DisplayText = b.DisplayText,
-            Notes = query.CallerRole is not null ? b.Notes : null,
-            CreatedByName = query.CallerRole is not null && !string.IsNullOrWhiteSpace(b.CreatedByName)
-                ? b.CreatedByName!.Trim() : null,
+            Notes = b.Notes,
+            CreatedByName = !string.IsNullOrWhiteSpace(b.CreatedByName) ? b.CreatedByName!.Trim() : null,
             CreatedAt = query.CallerRole == "Admin" ? b.CreatedAt : null
         });
 
