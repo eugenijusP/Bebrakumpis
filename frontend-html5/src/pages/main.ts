@@ -56,8 +56,7 @@ export async function renderMainPage(): Promise<void> {
         </div>
         <div class="bh-hero-meta">
           <div><div class="n">${houseList.length}</div><div class="l">${houseList.length === 1 ? 'cottage' : 'cottages'}</div></div>
-          <div><div class="n">5</div><div class="l">bedrooms</div></div>
-          <div><div class="n">200m</div><div class="l">of shoreline</div></div>
+<div><div class="n">200m</div><div class="l">of shoreline</div></div>
         </div>
       </div>
       <div class="bh-hero-art">
@@ -103,7 +102,7 @@ export async function renderMainPage(): Promise<void> {
           <div class="bh-loc-list">
             <div class="bh-loc-item"><div class="ic">&#9678;</div><div><div class="t">Lakefront on Lake Bebrusai</div><div class="s">Private shoreline, jetty &amp; swimming</div></div></div>
             <div class="bh-loc-item"><div class="ic">&#9650;</div><div><div class="t">Pine forest at the door</div><div class="s">Mushrooms, berries, long walks</div></div></div>
-            <div class="bh-loc-item"><div class="ic">&#9654;</div><div><div class="t">~90 minutes from Vilnius</div><div class="s">Parking for several cars in the yard</div></div></div>
+            <div class="bh-loc-item"><div class="ic">&#9654;</div><div><div class="t">~60 minutes from Vilnius</div><div class="s">Parking for several cars in the yard</div></div></div>
           </div>
           <a class="bh-btn bh-btn-ghost bh-btn-sm" href="${MAP_LINK}" target="_blank" rel="noopener">Open in Google Maps</a>
         </div>
