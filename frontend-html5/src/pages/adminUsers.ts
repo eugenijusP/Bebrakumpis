@@ -58,11 +58,11 @@ function renderPage(): void {
           <div class="bh-form-grid bh-form-grid-2">
             <div class="bh-form-group">
               <label for="user-first-name" class="bh-label">First Name</label>
-              <input id="user-first-name" type="text" class="bh-input" maxlength="100" required />
+              <input id="user-first-name" type="text" class="bh-input" maxlength="100" />
             </div>
             <div class="bh-form-group">
               <label for="user-last-name" class="bh-label">Last Name</label>
-              <input id="user-last-name" type="text" class="bh-input" maxlength="100" required />
+              <input id="user-last-name" type="text" class="bh-input" maxlength="100" />
             </div>
           </div>
           <div id="user-username-group" class="bh-form-group">
@@ -122,8 +122,9 @@ function userRow(u: UserRecord): string {
   const statusBadge = u.isActive
     ? '<span class="bh-badge bh-badge-active">Active</span>'
     : '<span class="bh-badge bh-badge-inactive">Inactive</span>';
+  const displayName = [u.firstName, u.lastName].filter(Boolean).map(escHtml).join(' ') || '—';
   return `<tr>
-    <td>${escHtml(u.firstName)} ${escHtml(u.lastName)}</td>
+    <td>${displayName}</td>
     <td>${escHtml(u.username)}</td>
     <td>${roleBadge(u.role)}</td>
     <td>${statusBadge}</td>
@@ -182,8 +183,8 @@ function openAddModal(): void {
 function openEditModal(user: UserRecord): void {
   _editingId = user.id;
   (document.getElementById('modal-user-title') as HTMLElement).textContent = 'Edit User';
-  (document.getElementById('user-first-name') as HTMLInputElement).value = user.firstName;
-  (document.getElementById('user-last-name') as HTMLInputElement).value = user.lastName;
+  (document.getElementById('user-first-name') as HTMLInputElement).value = user.firstName ?? '';
+  (document.getElementById('user-last-name') as HTMLInputElement).value = user.lastName ?? '';
   (document.getElementById('user-role') as HTMLSelectElement).value = user.role;
   (document.getElementById('user-active') as HTMLInputElement).checked = user.isActive;
   (document.getElementById('user-username-group') as HTMLElement).style.display = 'none';
@@ -213,8 +214,10 @@ async function handleUserFormSubmit(e: Event): Promise<void> {
   errorEl.style.display = 'none';
   saveBtn.disabled = true;
 
-  const firstName = (document.getElementById('user-first-name') as HTMLInputElement).value.trim();
-  const lastName = (document.getElementById('user-last-name') as HTMLInputElement).value.trim();
+  const firstNameRaw = (document.getElementById('user-first-name') as HTMLInputElement).value.trim();
+  const lastNameRaw = (document.getElementById('user-last-name') as HTMLInputElement).value.trim();
+  const firstName = firstNameRaw || null;
+  const lastName = lastNameRaw || null;
   const role = (document.getElementById('user-role') as HTMLSelectElement).value;
 
   try {

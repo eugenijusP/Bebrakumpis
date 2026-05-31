@@ -8,7 +8,7 @@ using FluentValidation;
 
 namespace Bebrakumpis.Application.Features.Users.Commands;
 
-public record CreateUserCommand(string FirstName, string LastName, string Username, string Password, string Role)
+public record CreateUserCommand(string? FirstName, string? LastName, string Username, string Password, string Role)
     : IRequest<Result<UserResponse>>;
 
 public class CreateUserCommandHandler(

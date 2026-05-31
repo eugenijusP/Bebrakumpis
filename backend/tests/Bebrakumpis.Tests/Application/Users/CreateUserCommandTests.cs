@@ -50,17 +50,6 @@ public class CreateUserCommandTests
     }
 
     [Fact]
-    public async Task HandleAsync_ShouldReturnValidationFailure_WhenFirstNameIsEmpty()
-    {
-        var result = await _handler.HandleAsync(
-            new CreateUserCommand("", "Doe", "john", "Secret1", "User"), default);
-
-        Assert.False(result.IsSuccess);
-        Assert.Equal(ErrorType.ValidationFailure, result.ErrorType);
-        _repoMock.Verify(r => r.CreateAsync(It.IsAny<User>(), default), Times.Never);
-    }
-
-    [Fact]
     public async Task HandleAsync_ShouldReturnValidationFailure_WhenRoleIsInvalid()
     {
         var result = await _handler.HandleAsync(
