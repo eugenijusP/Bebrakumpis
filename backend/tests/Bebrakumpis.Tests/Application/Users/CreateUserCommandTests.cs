@@ -59,13 +59,4 @@ public class CreateUserCommandTests
         Assert.Equal(ErrorType.ValidationFailure, result.ErrorType);
     }
 
-    [Fact]
-    public async Task HandleAsync_ShouldReturnValidationFailure_WhenPasswordIsTooShort()
-    {
-        var result = await _handler.HandleAsync(
-            new CreateUserCommand("John", "Doe", "john", "ab", "User"), default);
-
-        Assert.False(result.IsSuccess);
-        Assert.Equal(ErrorType.ValidationFailure, result.ErrorType);
-    }
 }

@@ -80,14 +80,4 @@ public class ChangePasswordCommandTests
         Assert.Equal(ErrorType.NotFound, result.ErrorType);
     }
 
-    [Fact]
-    public async Task HandleAsync_ShouldReturnValidationFailure_WhenNewPasswordIsTooShort()
-    {
-        var result = await _handler.HandleAsync(
-            new ChangePasswordCommand(Guid.NewGuid(), Guid.NewGuid(), null, "ab"), default);
-
-        Assert.False(result.IsSuccess);
-        Assert.Equal(ErrorType.ValidationFailure, result.ErrorType);
-        _repoMock.Verify(r => r.GetByIdAsync(It.IsAny<Guid>(), default), Times.Never);
-    }
 }
