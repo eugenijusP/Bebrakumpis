@@ -266,7 +266,7 @@ function handleBandMouseover(e: Event): void {
   if (!band) return;
   const bookingId = band.dataset['bookingId'];
   const booking = _bookings.find((b) => b.id === bookingId);
-  if (!booking) return;
+  if (!booking || !currentUser()) return;
   showTooltip(e as MouseEvent, booking);
 }
 

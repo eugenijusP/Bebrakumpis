@@ -17,7 +17,7 @@ public class BookingRepository(IDbConnectionFactory connectionFactory) : IBookin
         var cmd = new CommandDefinition("""
             SELECT b.id, b.house_id, b.type, b.start_date, b.end_date,
                    b.display_text, b.notes, b.created_by, b.created_at,
-                   CONCAT(u.first_name, ' ', u.last_name) AS created_by_name
+                   u.username AS created_by_name
             FROM bookings b
             LEFT JOIN users u ON u.id = b.created_by
             WHERE b.start_date <= @LastDay AND b.end_date >= @FirstDay

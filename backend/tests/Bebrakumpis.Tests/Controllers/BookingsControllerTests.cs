@@ -84,7 +84,7 @@ public class BookingsControllerTests : IClassFixture<TestWebAppFactory>, IAsyncL
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var item = body.EnumerateArray().First(b => b.GetProperty("displayText").GetString() == "User view");
         Assert.Equal("User notes", item.GetProperty("notes").GetString());
-        Assert.Equal("John Smith", item.GetProperty("createdByName").GetString());
+        Assert.Equal("userbooker", item.GetProperty("createdByName").GetString());
         Assert.Equal(JsonValueKind.Null, item.GetProperty("createdAt").ValueKind);
     }
 
