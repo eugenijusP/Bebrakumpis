@@ -8,8 +8,8 @@ namespace Bebrakumpis.Infrastructure.Services;
 public class AzureBlobStorageService(IConfiguration configuration) : IBlobStorageService
 {
     private readonly BlobContainerClient _containerClient = new(
-        configuration["AzureBlobStorage:ConnectionString"]!,
-        configuration["AzureBlobStorage:ContainerName"]!);
+        configuration["BlobStorage:ConnectionString"]!,
+        configuration["BlobStorage:ContainerName"]!);
 
     public async Task<string> UploadAsync(Stream content, string contentType, string blobName, CancellationToken cancellationToken = default)
     {
