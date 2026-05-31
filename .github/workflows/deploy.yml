@@ -7,7 +7,7 @@ on:
 env:
   ACR_REGISTRY: acrshareddevep.azurecr.io
   IMAGE_NAME: bebrakumpis-api
-  APP_NAME: bebrakumpis-api
+  APP_NAME: bebbrakumpis-dev-api
   APP_RG: bebrakumpis-rg
 
 jobs:
